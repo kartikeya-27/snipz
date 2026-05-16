@@ -21,7 +21,7 @@ Companion to [calyx.md](calyx.md), which covers positioning and the build plan. 
                   │ uses
 ┌─────────────────▼───────────────────────────────┐
 │  Core engine                                    │
-│  Reservation, Ledger, BudgetExceeded            │
+│  Reservation, Ledger, BudgetExceededError            │
 └─────────────────┬───────────────────────────────┘
                   │ uses
 ┌─────────────────▼───────────────────────────────┐
@@ -40,7 +40,7 @@ Companion to [calyx.md](calyx.md), which covers positioning and the build plan. 
 ```
 calyx/
   __init__.py            # public re-exports
-  core.py                # Budget, Reservation, BudgetExceeded
+  core.py                # Budget, Reservation, BudgetExceededError
   ledger.py              # SQL transactions, cap arithmetic
   pricing.py             # cost calculation
   pricing.toml           # vendored prices (LiteLLM-derived)
@@ -50,11 +50,17 @@ calyx/
     openai.py
     fallback.py          # tiktoken-based generic
   storage/
-    __init__.py          # Backend protocol
-    postgres.py
-    sqlite.py
-    migrations/          # versioned SQL files
-  aio.py                 # AsyncBudget (async API)
+    __init__.py          # Backend + LedgerConnection protocols
+    sqlite.py            # SqliteBackend
+    postgres.py          # PostgresBackend (Phase 2)
+    sql/
+      sqlite.py          # SQL constants for SQLite dialect
+      postgres.py        # SQL constants for Postgres dialect
+    migrations/
+      sqlite/            # numbered .sql files
+      postgres/          # numbered .sql files (lockstep versions)
+  sync.py                # sync wrapper (experimental, Phase 2)
+  aio.py                 # AsyncBudget re-export (async is the default)
   decorator.py           # @budget.guard
   events.py              # hook system
   sweep.py               # reservation expirer
@@ -191,7 +197,7 @@ INSERT ledger row (reserved)        │
 COMMIT                              │
                                    SELECT FOR UPDATE acquires
                                    cap check now sees A's reservation
-                                   pass or raise BudgetExceeded
+                                   pass or raise BudgetExceededError
                                    COMMIT
 ```
 
@@ -202,15 +208,36 @@ COMMIT                              │
 Async is the source of truth. Sync wrappers run the async core via a dedicated background event loop, so sync users do not fight asyncio:
 
 ```python
-from calyx import Budget          # sync API
+from calyx import Budget          # sync API (experimental in Phase 2)
 from calyx.aio import AsyncBudget  # async API
 ```
 
-Same backends, same SQL, same correctness guarantees.
+Sync calls from inside an active event loop raise a clear error rather than deadlocking. Same backends, same SQL, same correctness guarantees.
+
+## Backend abstraction
+
+`ledger.py` is dialect-agnostic — it speaks only the `LedgerConnection` Protocol. Each backend wraps its native driver to satisfy that interface.
+
+```
+Budget ─▶ Backend ─▶ LedgerConnection ─▶ ledger.py (cap-check orchestration)
+                              │
+                              ├─▶ wraps aiosqlite.Connection (SqliteBackend)
+                              └─▶ wraps asyncpg.Connection  (PostgresBackend)
+```
+
+The wrapper exposes one async API; per-backend implementations dispatch to dialect-specific SQL (`storage/sql/{sqlite,postgres}.py`) and to native type adapters. UUIDs, Decimals, datetimes, and booleans flow as Python-native types through `ledger.py` — string conversion happens inside the backend, not in the engine.
+
+`lock_limit` is the most dialect-divergent operation and lives as a method on `LedgerConnection`:
+
+- **SqliteBackend**: no-op. `BEGIN IMMEDIATE` in `transaction()` already holds the DB-wide writer lock.
+- **PostgresBackend**: `SET LOCAL lock_timeout = '5s'; SELECT cap_cents … FOR UPDATE`. A worker waiting >5s on a contended row sees a clear error rather than hanging.
+
+All user-supplied values flow as bound parameters. SQL is never built via string concatenation, regardless of dialect.
 
 ## Extension points
 
-- **`Backend` protocol** — implement to add storage. Methods: `reserve`, `commit`, `release`, `sweep`, `current_spend`. v0 ships Postgres and SQLite.
+- **`Backend` protocol** — implement to add storage. Methods: `transaction()`, `connect()`, `migrate()`, `close()`. v0 ships SQLite (Phase 1) and Postgres (Phase 2).
+- **`LedgerConnection` protocol** — implement alongside a new backend to expose dialect-specific operations (`lock_limit`, `fetch_limit`, `current_spend`, `insert_ledger_row`, etc.) under one async interface.
 - **`Estimator` protocol** — implement to add a provider. Method: `estimate(prompt, model) → (input_tokens, max_output_tokens)`.
 - **Event hooks** — `on_reserved`, `on_committed`, `on_released`, `on_overrun`. Sync + async variants. Handler errors are logged, not propagated.
 
@@ -320,7 +347,7 @@ SELECT COALESCE(SUM(
    AND state IN ('reserved', 'committed')
    AND created_at >= $4;   -- window start, computed in app code
 
--- 3. If spent + new_estimate > cap_cents * (1 + grace_pct/100): raise BudgetExceeded
+-- 3. If spent + new_estimate > cap_cents * (1 + grace_pct/100): raise BudgetExceededError
 -- 4. Else INSERT the reservation row(s)
 
 INSERT INTO calyx_ledger (...) VALUES (...);
@@ -373,7 +400,7 @@ A unique index on `request_id` is necessary but not sufficient — the reserve f
 
 6. **COMMIT** on the success path.
 
-Guarantee: N parallel retries with the same `request_id` produce **exactly one ledger row**, and all callers receive the same Reservation. If the first attempt fails cap-check, retries see the same `BudgetExceeded` (or, if the cap state changed, the first one to succeed wins).
+Guarantee: N parallel retries with the same `request_id` produce **exactly one ledger row**, and all callers receive the same Reservation. If the first attempt fails cap-check, retries see the same `BudgetExceededError` (or, if the cap state changed, the first one to succeed wins).
 
 ## Migrations
 
@@ -415,3 +442,14 @@ Locked-in choices, recorded so we don't relitigate them.
 12. **Idempotent reserve = SELECT-first → INSERT with unique-conflict recovery** — the unique index alone is not enough; flow must converge N parallel retries onto exactly one ledger row.
 13. **Streaming partial-failure = caller commits, not releases** — the provider already billed; the library cannot infer billability without provider-specific knowledge. Documented caller responsibility.
 14. **Sweeper does not lock the limit row** — released rows are excluded from cap-check, so coordinating with concurrent reserves is unnecessary.
+15. **Per-backend SQL modules, not templated** — `storage/sql/sqlite.py` and `storage/sql/postgres.py` hold dialect-pure constants. Drift is caught by the conformance suite; templated SQL would be one fewer file but harder to audit.
+16. **Schema version bumps to v2 in Phase 2** — even without column changes, v2 marks "validated against both backends." Migrations stay lockstep across dialects: a Postgres v3 implies a SQLite v3 (with a no-op file if needed).
+17. **`LedgerConnection` Protocol over per-dialect ledger modules** — each backend wraps its native driver; `ledger.py` speaks one async interface. Avoids duplicating cap-check orchestration. ~80 LOC of wrapper.
+18. **Type stringification lives in backend adapters, not `ledger.py`** — UUIDs, Decimals, datetimes, and booleans flow as Python-native types into the wrapper; the wrapper handles dialect-specific conversion. Keeps the engine dialect-blind.
+19. **`lock_limit` is a method on `LedgerConnection`** — dialect dispatch lives where dialect lives. SQLite: no-op (`BEGIN IMMEDIATE` already holds the lock). Postgres: `SET LOCAL lock_timeout = '5s'; SELECT … FOR UPDATE` — bounded wait, clear error on contention.
+20. **All user-supplied values flow as bound parameters; SQL is never concatenated** — hard invariant across all backends. Code review or a lint check enforces it.
+21. **Postgres pool: dual-mode with conservative defaults** — `Budget("postgres://...")` creates a managed pool (`min_size=2, max_size=10`); `PostgresBackend(pool=...)` accepts an injected pool for shops sharing one with their app. Utilization ≥80% emits `logging.warning`, rate-limited to once per 60s. Threshold and cooldown configurable.
+22. **`migrate()` stays on `Backend`; no separate `Migrator`** — migration discovery is dialect-specific anyway, splitting into a separate utility just creates indirection. Refactor only if rollbacks / dry-runs / ranged migrations become necessary.
+23. **No `check_connectivity()` on the Backend protocol** — asyncpg's defaults (warm pool, idle recycling) handle 99% of real cases. DB health is surfaced via observability (Phase 7 events), not a protocol method. Add only if a real user reports flaky pool behavior.
+24. **Sync wrapper ships experimental in Phase 2** — `sync.py` runs the async core via a dedicated background event loop. Calls from inside an active event loop raise rather than deadlock. Marked `experimental` in the README; promote to stable in Phase 3 once exercised.
+25. **testcontainers for Postgres in CI; SQLite tests stay in-process** — adds a Docker dependency for development and CI, but exercises real Postgres semantics. Conformance suite runs against both backends in a CI matrix.

@@ -42,11 +42,11 @@ T=1ms   A: SELECT * FROM calyx_limits WHERE (user,u1,month) FOR UPDATE
         → acquires lock; cap=500, grace=0
 T=1ms   B: SELECT FOR UPDATE → blocks waiting for A's lock
 T=2ms   A: SELECT SUM(...) → spent = 495
-T=2ms   A: 495 + 10 = 505 > 500 → BudgetExceeded
+T=2ms   A: 495 + 10 = 505 > 500 → BudgetExceededError
 T=2ms   A: ROLLBACK   (lock released)
 T=3ms   B: now acquires lock
 T=3ms   B: SELECT SUM(...) → spent = 495 (A rolled back, no change)
-T=3ms   B: 495 + 10 = 505 > 500 → BudgetExceeded
+T=3ms   B: 495 + 10 = 505 > 500 → BudgetExceededError
 T=3ms   B: ROLLBACK
 ```
 
@@ -105,7 +105,7 @@ Caller fires the same `request_id='req_abc'` 10 times in parallel (network timeo
 2. BEGIN
 3. SELECT * FROM calyx_limits WHERE ... FOR UPDATE
 4. SELECT SUM(...) → spent
-5. Check spent + estimate ≤ cap; if no, ROLLBACK and raise BudgetExceeded
+5. Check spent + estimate ≤ cap; if no, ROLLBACK and raise BudgetExceededError
 6. INSERT INTO calyx_ledger (..., request_id = $1)
    On UNIQUE violation:
      ROLLBACK
@@ -131,7 +131,7 @@ T=5ms+    R3-R10: same as R2
 
 **Result: exactly one ledger row, all 10 callers receive the same Reservation. Assertion holds.**
 
-### Edge: R1 raised BudgetExceeded
+### Edge: R1 raised BudgetExceededError
 
 If R1 failed cap-check and rolled back, no row exists. R2 acquires the lock, runs cap-check, and either succeeds (in which case R3-R10 collide on R2's row and return it) or also fails. The "first successful reservation wins" property is preserved.
 
@@ -167,7 +167,7 @@ T=200ms   R1: observe(input=500, output=400)
 T=300ms   R2 arrives: reserve(cents=500)
           BEGIN; SELECT FOR UPDATE limit;
           SELECT SUM(...) → R1 contributes max(actual=600, est=500) = 600
-          600 + 500 = 1100 > 1000 → BudgetExceeded ✓
+          600 + 500 = 1100 > 1000 → BudgetExceededError ✓
 
 T=500ms   R1: observe(input=500, output=600)
           UPDATE actual_cents = 850
@@ -264,7 +264,7 @@ T=405s    R3 arrives: reserve(cents=300)
             R1 (committed, late, actual=480) → 480
             R2 (reserved, est=500, actual=NULL) → max(0, 500) = 500
             spent = 980
-          980 + 300 = 1280 > 1000 → BudgetExceeded ✓
+          980 + 300 = 1280 > 1000 → BudgetExceededError ✓
 ```
 
 **Late-committed cost (R1's $4.80) correctly accounted in subsequent cap checks. Assertion holds.**
@@ -309,7 +309,7 @@ Step 3  SELECT * FROM calyx_limits WHERE (tenant,t1,month) FOR UPDATE
         → acquires; cap=20000
 
 Step 4  SELECT SUM(...) for tenant/t1 → spent=19900
-        19900 + 500 = 20400 > 20000 → BudgetExceeded(scope=tenant/t1)
+        19900 + 500 = 20400 > 20000 → BudgetExceededError(scope=tenant/t1)
 
 Step 5  ROLLBACK
         - Tenant lock auto-released

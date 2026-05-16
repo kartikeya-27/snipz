@@ -1,8 +1,13 @@
 """Versioned schema migrations.
 
-Migrations are raw SQL files numbered ``NNNN_description.sql``. The
-``calyx_schema_version`` table tracks the highest applied version.
-The migration runner is part of :mod:`calyx.storage`.
+Per-dialect subpackages: ``sqlite/`` and ``postgres/``. Migrations are
+raw SQL files numbered ``NNNN_description.sql``. Schema versions stay
+in lockstep across dialects — a Postgres v3 implies a SQLite v3 (with a
+no-op migration if the schema change does not apply).
+
+The ``calyx_schema_version`` table tracks the highest applied version.
+Each backend's ``migrate()`` method discovers and applies its own
+dialect's pending files.
 """
 
 from __future__ import annotations

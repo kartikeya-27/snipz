@@ -21,12 +21,22 @@ dependencies = [
     "aiosqlite>=0.20",
 ]
 
+[project.optional-dependencies]
+# Postgres backend. Install with `pip install calyx[postgres]`.
+# SQLite-only deployments (single-node, tests) do not need this.
+postgres = ["asyncpg>=0.30"]
+
 [dependency-groups]
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.24",
     "ruff>=0.7",
     "mypy>=1.13",
+    # Postgres dev tooling — needed to run the `--postgres` test suite.
+    # The suite is skipped by default, so a developer without Docker can
+    # still run the SQLite tests cleanly.
+    "asyncpg>=0.30",
+    "testcontainers[postgres]>=4.0",
 ]
 
 [build-system]
@@ -41,6 +51,9 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
+markers = [
+    "postgres: requires asyncpg + Docker. Skipped by default; pass --postgres to run.",
+]
 
 [tool.ruff]
 line-length = 100
@@ -73,3 +86,11 @@ strict = true
 warn_unreachable = true
 warn_redundant_casts = true
 disallow_untyped_decorators = true
+
+# Third-party libraries without published type stubs.
+# - asyncpg: no py.typed marker; we treat its surface as Any.
+# - testcontainers: dev-only test fixture import; mypy does not check tests
+#   strictly here, but the override keeps the option open.
+[[tool.mypy.overrides]]
+module = ["asyncpg", "asyncpg.*", "testcontainers", "testcontainers.*"]
+ignore_missing_imports = true

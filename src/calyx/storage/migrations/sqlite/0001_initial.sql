@@ -36,7 +36,8 @@ CREATE TABLE calyx_ledger (
     metadata        TEXT    NOT NULL DEFAULT '{}',
     created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     settled_at      TEXT,
-    expires_at      TEXT    NOT NULL
+    expires_at      TEXT    NOT NULL,
+    CHECK (state != 'committed' OR actual_cents IS NOT NULL)
 );
 
 CREATE TABLE calyx_pricing (

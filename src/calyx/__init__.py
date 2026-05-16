@@ -7,5 +7,15 @@ for the design spec and ``calyx.md`` for positioning and the build plan.
 
 from __future__ import annotations
 
+from calyx.core import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
+
 __version__ = "0.0.1"
-__all__ = ["__version__"]
+
+__all__ = [
+    "Budget",
+    "BudgetExceededError",
+    "InvalidStateError",
+    "Reservation",
+    "Scope",
+    "__version__",
+]

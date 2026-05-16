@@ -17,9 +17,12 @@ def test_version_is_set() -> None:
     assert calyx.__version__ == "0.0.1"
 
 
+_SQLITE_MIGRATIONS = "calyx.storage.migrations.sqlite"
+
+
 def test_initial_migration_applies_cleanly() -> None:
     """0001_initial.sql must apply to an empty SQLite database without error."""
-    sql = files("calyx.storage.migrations").joinpath("0001_initial.sql").read_text()
+    sql = files(_SQLITE_MIGRATIONS).joinpath("0001_initial.sql").read_text()
     conn = sqlite3.connect(":memory:")
     try:
         conn.executescript(sql)
@@ -31,7 +34,7 @@ def test_initial_migration_applies_cleanly() -> None:
 
 def test_initial_migration_creates_expected_tables() -> None:
     """The four core tables must exist after the migration."""
-    sql = files("calyx.storage.migrations").joinpath("0001_initial.sql").read_text()
+    sql = files(_SQLITE_MIGRATIONS).joinpath("0001_initial.sql").read_text()
     conn = sqlite3.connect(":memory:")
     try:
         conn.executescript(sql)

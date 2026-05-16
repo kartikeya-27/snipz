@@ -79,7 +79,7 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 - Sanity-check the schema can answer "current spend per scope per window" in O(log n).
 
 ### Phase 1 — Core engine (~250 LOC)
-- `Budget`, `Reservation`, `BudgetExceeded`, the SQL transactions.
+- `Budget`, `Reservation`, `BudgetExceededError`, the SQL transactions.
 - No decorators, no estimators, no provider integrations yet.
 - API: `budget.reserve(scope, cents) → Reservation` with `commit()` / `release()` / `observe()`.
 - Property tests for cap arithmetic — this is where most projects get it wrong.
@@ -120,6 +120,15 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 - Verify Calyx never exceeds $5.
 - Show LiteLLM BudgetManager and Shekel exceeding the cap.
 - This is what sells the project — must ship before any landing-page work.
+
+### Phase 8.5 — Calyx Protocol and polyglot clients (~800 LOC across 3 packages)
+- `calyx-protocol.md` — canonical spec: schema, cap-check transaction, state machine, idempotency, late-commit semantics. Versioned; breaking changes require a major bump.
+- `calyx-server` (~200 LOC, FastAPI) — HTTP facade over the Python library. Endpoints: `POST /reserve`, `POST /reservations/{id}/commit`, `POST /reservations/{id}/release`. Ships as a Docker image.
+- `calyx-go` (~300 LOC) — native Go client, direct Postgres access. Same correctness, no network hop.
+- `calyx-node` (~300 LOC) — native Node/TypeScript client.
+- Conformance suite — one set of YAML fixtures (composite scopes, idempotent retries, late commits, streaming overruns) executed against every client. Pass or don't ship under the Calyx name.
+- Polyglot demo: one Postgres, one $5 cap on `(user, u_42)`, 1000 concurrent reservations across Python + Go + Node workers simultaneously. Final spend ≤ $5.00 regardless of interleaving.
+- This is what turns Calyx from "a Python library" into "the standard for LLM cost limits." Must ship before Phase 9 — provider integrations reinforce the Python frame; the protocol breaks it.
 
 ### Phase 9 — Provider integrations
 - `calyx-anthropic` — auto-wraps `anthropic.messages.create`.
