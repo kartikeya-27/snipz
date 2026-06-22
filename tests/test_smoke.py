@@ -1,4 +1,4 @@
-"""Smoke tests for the Calyx package scaffold.
+"""Smoke tests for the Brim package scaffold.
 
 These verify that the package imports, package data is shipped, and the
 Phase 0 schema applies cleanly to a fresh SQLite database. Real reservation
@@ -10,14 +10,14 @@ from __future__ import annotations
 import sqlite3
 from importlib.resources import files
 
-import calyx
+import brim
 
 
 def test_version_is_set() -> None:
-    assert calyx.__version__ == "0.0.1"
+    assert brim.__version__ == "0.0.1"
 
 
-_SQLITE_MIGRATIONS = "calyx.storage.migrations.sqlite"
+_SQLITE_MIGRATIONS = "brim.storage.migrations.sqlite"
 
 
 def test_initial_migration_applies_cleanly() -> None:
@@ -26,7 +26,7 @@ def test_initial_migration_applies_cleanly() -> None:
     conn = sqlite3.connect(":memory:")
     try:
         conn.executescript(sql)
-        cur = conn.execute("SELECT version FROM calyx_schema_version")
+        cur = conn.execute("SELECT version FROM brim_schema_version")
         assert cur.fetchone() == (1,)
     finally:
         conn.close()
@@ -40,9 +40,9 @@ def test_initial_migration_creates_expected_tables() -> None:
         conn.executescript(sql)
         cur = conn.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' "
-            "AND name LIKE 'calyx_%' ORDER BY name"
+            "AND name LIKE 'brim_%' ORDER BY name"
         )
         tables = [row[0] for row in cur.fetchall()]
-        assert tables == ["calyx_ledger", "calyx_limits", "calyx_pricing", "calyx_schema_version"]
+        assert tables == ["brim_ledger", "brim_limits", "brim_pricing", "brim_schema_version"]
     finally:
         conn.close()

@@ -1,4 +1,4 @@
-# Calyx — Positioning and Design Plan
+# Brim — Positioning and Design Plan
 
 Last updated: 2026-05-05
 
@@ -18,7 +18,7 @@ None ship a real reservation ledger. That is the gap.
 
 ## Competitor landscape (May 2026)
 
-| Capability | LiteLLM BudgetManager (SDK) | Shekel | Portkey | LiteLLM Proxy | Calyx |
+| Capability | LiteLLM BudgetManager (SDK) | Shekel | Portkey | LiteLLM Proxy | Brim |
 |---|---|---|---|---|---|
 | Embedded library (no gateway) | Yes | Yes | No | No | Yes |
 | Pre-flight cap enforcement | Yes | Yes | Yes | Yes | Yes |
@@ -34,12 +34,12 @@ None ship a real reservation ledger. That is the gap.
 
 ---
 
-## What others lack — what Calyx delivers
+## What others lack — what Brim delivers
 
 ### 1. Reservation-ledger semantics
 LiteLLM's BudgetManager and Shekel both estimate, check, call, log. If two requests arrive at $4.95 of a $5.00 cap concurrently, both pass the check and both execute — overshooting the cap. There is no atomic reserve-and-decrement.
 
-**Calyx:** pre-flight reserve inside a transaction with `SELECT FOR UPDATE` on the limit row. Commit on success, release on failure. The cap is never exceeded under concurrent load.
+**Brim:** pre-flight reserve inside a transaction with `SELECT FOR UPDATE` on the limit row. Commit on success, release on failure. The cap is never exceeded under concurrent load.
 
 ### 2. Postgres-first storage
 Shekel's distributed mode is Redis-only. LiteLLM SDK persists to JSON-on-disk. Neither offers:
@@ -47,12 +47,12 @@ Shekel's distributed mode is Redis-only. LiteLLM SDK persists to JSON-on-disk. N
 - SQLite — for single-node deployments and tests
 - Auditable, queryable spend history — a JSON blob is not a real ledger
 
-**Calyx:** protocol-based backends. Postgres and SQLite from day one. A schema you can query directly.
+**Brim:** protocol-based backends. Postgres and SQLite from day one. A schema you can query directly.
 
 ### 3. Streaming-native
 Neither competitor handles the case where actuals diverge from estimates mid-stream. With Anthropic's 200k-context responses this matters — a streaming response can blow through a tight cap before the SDK call returns.
 
-**Calyx:** `Reservation.observe()` updates actuals incrementally. If projected total breaches the cap, you can abort cooperatively. Reconciles correctly on partial failure.
+**Brim:** `Reservation.observe()` updates actuals incrementally. If projected total breaches the cap, you can abort cooperatively. Reconciles correctly on partial failure.
 
 ---
 
@@ -93,7 +93,7 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 ### Phase 3 — Pricing (~150 LOC)
 - Vendor LiteLLM's pricing TOML.
 - `Pricing.cost(provider, model, input_tokens, output_tokens) → cents`.
-- `calyx update-pricing` CLI to refresh.
+- `brim update-pricing` CLI to refresh.
 
 ### Phase 4 — Estimators (~200 LOC)
 - `estimators/anthropic.py` — Anthropic token counter.
@@ -107,7 +107,7 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 
 ### Phase 6 — Reservation sweeper (~50 LOC)
 - Background job to expire stuck reservations.
-- CLI: `calyx sweep --interval 60`.
+- CLI: `brim sweep --interval 60`.
 - Or callable from any existing scheduler.
 
 ### Phase 7 — Events / hooks (~50 LOC)
@@ -117,22 +117,22 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 ### Phase 8 — The killer demo (the marketing artifact)
 - Concurrency correctness benchmark.
 - Fire 1000 concurrent requests against a $5 cap.
-- Verify Calyx never exceeds $5.
+- Verify Brim never exceeds $5.
 - Show LiteLLM BudgetManager and Shekel exceeding the cap.
 - This is what sells the project — must ship before any landing-page work.
 
-### Phase 8.5 — Calyx Protocol and polyglot clients (~800 LOC across 3 packages)
-- `calyx-protocol.md` — canonical spec: schema, cap-check transaction, state machine, idempotency, late-commit semantics. Versioned; breaking changes require a major bump.
-- `calyx-server` (~200 LOC, FastAPI) — HTTP facade over the Python library. Endpoints: `POST /reserve`, `POST /reservations/{id}/commit`, `POST /reservations/{id}/release`. Ships as a Docker image.
-- `calyx-go` (~300 LOC) — native Go client, direct Postgres access. Same correctness, no network hop.
-- `calyx-node` (~300 LOC) — native Node/TypeScript client.
-- Conformance suite — one set of YAML fixtures (composite scopes, idempotent retries, late commits, streaming overruns) executed against every client. Pass or don't ship under the Calyx name.
+### Phase 8.5 — Brim Protocol and polyglot clients (~800 LOC across 3 packages)
+- `brim-protocol.md` — canonical spec: schema, cap-check transaction, state machine, idempotency, late-commit semantics. Versioned; breaking changes require a major bump.
+- `brim-server` (~200 LOC, FastAPI) — HTTP facade over the Python library. Endpoints: `POST /reserve`, `POST /reservations/{id}/commit`, `POST /reservations/{id}/release`. Ships as a Docker image.
+- `brim-go` (~300 LOC) — native Go client, direct Postgres access. Same correctness, no network hop.
+- `brim-node` (~300 LOC) — native Node/TypeScript client.
+- Conformance suite — one set of YAML fixtures (composite scopes, idempotent retries, late commits, streaming overruns) executed against every client. Pass or don't ship under the Brim name.
 - Polyglot demo: one Postgres, one $5 cap on `(user, u_42)`, 1000 concurrent reservations across Python + Go + Node workers simultaneously. Final spend ≤ $5.00 regardless of interleaving.
-- This is what turns Calyx from "a Python library" into "the standard for LLM cost limits." Must ship before Phase 9 — provider integrations reinforce the Python frame; the protocol breaks it.
+- This is what turns Brim from "a Python library" into "the standard for LLM cost limits." Must ship before Phase 9 — provider integrations reinforce the Python frame; the protocol breaks it.
 
 ### Phase 9 — Provider integrations
-- `calyx-anthropic` — auto-wraps `anthropic.messages.create`.
-- `calyx-openai` — same for OpenAI.
+- `brim-anthropic` — auto-wraps `anthropic.messages.create`.
+- `brim-openai` — same for OpenAI.
 - Optional packages; core stays clean.
 
 ### Phase 10 — v0 release
@@ -162,7 +162,7 @@ That gives a window of roughly 12 months to ship a clearly better primitive and 
 
 ## Future scope: Rust core (v2+)
 
-Calyx is Python-first by design — the hot path is database I/O, not CPU. A Rust core makes sense only when there is a measurable performance claim to put on the README.
+Brim is Python-first by design — the hot path is database I/O, not CPU. A Rust core makes sense only when there is a measurable performance claim to put on the README.
 
 ### Why Python wins for v0/v1
 
@@ -191,7 +191,7 @@ Engineers reading "Rust-powered" expect a number. Shipping the badge without one
 ### When the v2 jump is justified
 
 - Production users hit a real ceiling — e.g., 50k+ reservations/sec where Python overhead is measurable.
-- Demand for embedding Calyx in non-Python apps (Rust services, Go, Node).
+- Demand for embedding Brim in non-Python apps (Rust services, Go, Node).
 - A benchmark shows a credible 3x+ speedup at burst load.
 
 If none materialize, v2 stays Python. **Don't ship Rust without a number.**
@@ -199,7 +199,7 @@ If none materialize, v2 stays Python. **Don't ship Rust without a number.**
 ### Properties of the eventual migration
 
 1. **Partial, not total.** Only the hot path moves: cap-check transaction, ledger arithmetic, sweeper. Decorator API, estimators, event hooks, and provider integrations stay in Python — that is where the value and contributor base live.
-2. **API-compatible.** `pip install calyx==2.0` keeps the same `from calyx import Budget`. Users see faster code, not a rewrite.
+2. **API-compatible.** `pip install brim==2.0` keeps the same `from brim import Budget`. Users see faster code, not a rewrite.
 
 The migration model is **Pydantic v1 → v2**: same public surface, Rust core, headline perf claim. The architecture in [architecture.md](architecture.md) already separates the hot path from the integration layer, so this rewrite path is open.
 

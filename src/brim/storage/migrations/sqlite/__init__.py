@@ -1,7 +1,7 @@
 """SQLite-dialect migration files.
 
 Numbered ``NNNN_<name>.sql`` files in this package are discovered and
-applied in sort order by :class:`calyx.storage.sqlite.SqliteBackend.migrate`.
+applied in sort order by :class:`brim.storage.sqlite.SqliteBackend.migrate`.
 The Postgres dialect lives in the sibling ``postgres/`` package and stays
 in lockstep on schema versions.
 """

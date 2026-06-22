@@ -48,7 +48,7 @@ wheels = [
 ]
 
 [[package]]
-name = "calyx"
+name = "brim"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [

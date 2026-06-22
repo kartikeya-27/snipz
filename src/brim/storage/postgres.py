@@ -3,7 +3,7 @@
 Two classes:
 
 * :class:`PostgresLedgerConnection` — implements
-  :class:`calyx.storage.LedgerConnection` over an ``asyncpg.Connection``.
+  :class:`brim.storage.LedgerConnection` over an ``asyncpg.Connection``.
   asyncpg's type codecs round-trip UUIDs, decimals, datetimes, and
   booleans natively, so this class does no string conversion at the
   Python boundary.
@@ -15,7 +15,7 @@ Two classes:
   pool may be managed by the backend (DSN constructor) or injected
   (``pool=`` keyword).
 
-asyncpg is an optional dependency (``pip install calyx[postgres]``).
+asyncpg is an optional dependency (``pip install brim[postgres]``).
 This module imports cleanly without it; constructing
 :class:`PostgresBackend` raises a clear :class:`ImportError` if asyncpg
 is not installed.
@@ -34,13 +34,13 @@ from importlib.resources.abc import Traversable
 from typing import TYPE_CHECKING, Final
 from uuid import UUID
 
-from calyx.storage import (
+from brim.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
     RequestIdConflictError,
 )
-from calyx.storage.sql import postgres as sql
+from brim.storage.sql import postgres as sql
 
 if TYPE_CHECKING:  # pragma: no cover
     from asyncpg import Connection, Pool, Record
@@ -62,13 +62,13 @@ except ImportError as _exc:  # pragma: no cover
     _asyncpg = None
     _IMPORT_ERROR = ImportError(
         "asyncpg is required for the Postgres backend. "
-        "Install with: pip install 'calyx[postgres]'"
+        "Install with: pip install 'brim[postgres]'"
     )
     _IMPORT_ERROR.__cause__ = _exc
 
 
-_MIGRATIONS_PACKAGE: Final = "calyx.storage.migrations.postgres"
-_LOGGER: Final = logging.getLogger("calyx.storage.postgres")
+_MIGRATIONS_PACKAGE: Final = "brim.storage.migrations.postgres"
+_LOGGER: Final = logging.getLogger("brim.storage.postgres")
 
 
 # ---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ class PostgresLedgerConnection:
     """LedgerConnection implementation backed by ``asyncpg``.
 
     Wraps an open ``asyncpg.Connection`` and dispatches to SQL constants
-    from :mod:`calyx.storage.sql.postgres`. asyncpg's native type
+    from :mod:`brim.storage.sql.postgres`. asyncpg's native type
     codecs handle UUIDs, decimals, datetimes, and booleans transparently
     so this class does no value conversion.
 
@@ -305,7 +305,7 @@ class PostgresBackend:
 
     Default (managed pool)::
 
-        backend = PostgresBackend("postgres://localhost/calyx")
+        backend = PostgresBackend("postgres://localhost/brim")
 
     Injected pool (share with host application)::
 
@@ -467,7 +467,7 @@ class PostgresBackend:
             return
         self._last_warned_monotonic = now
         _LOGGER.warning(
-            "Calyx Postgres pool near capacity (%d/%d). "
+            "Brim Postgres pool near capacity (%d/%d). "
             "Consider increasing max_size for high-throughput environments.",
             size,
             max_size,

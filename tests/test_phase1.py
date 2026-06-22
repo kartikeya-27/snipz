@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from calyx import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
+from brim import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
 
 if TYPE_CHECKING:
     from tests.conftest import FrozenClock

@@ -1,5 +1,5 @@
 [project]
-name = "calyx"
+name = "brim"
 version = "0.0.1"
 description = "LLM cost reservation ledger — pre-flight reserve, commit, release."
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Postgres backend. Install with `pip install calyx[postgres]`.
+# Postgres backend. Install with `pip install brim[postgres]`.
 # SQLite-only deployments (single-node, tests) do not need this.
 postgres = ["asyncpg>=0.30"]
 
@@ -44,7 +44,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/calyx"]
+packages = ["src/brim"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
