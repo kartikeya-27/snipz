@@ -19,6 +19,7 @@ from typing import Self
 from uuid import UUID
 
 from snipz import ledger
+from snipz.events import EventDispatcher, Handler
 from snipz.storage import Backend, CommitOutcome, RequestIdConflictError
 from snipz.storage.sqlite import SqliteBackend
 
@@ -149,6 +150,8 @@ class Reservation:
         self.actual_cents = cost
         if outcome.was_late:
             self.late = True
+            await self._budget._events.fire("overrun", self)
+        await self._budget._events.fire("committed", self)
 
     async def release(self) -> None:
         """Refund the reservation. No-op if already settled."""
@@ -156,6 +159,7 @@ class Reservation:
             return
         await self._budget._release(self.id)
         self.state = "released"
+        await self._budget._events.fire("released", self)
 
     async def __aenter__(self) -> Self:
         return self
@@ -241,6 +245,43 @@ class Budget:
     ) -> None:
         self._backend: Backend = _build_backend(backend)
         self._now = now if now is not None else _utc_now
+        self._events: EventDispatcher = EventDispatcher()
+
+    # -- event hooks ----------------------------------------------------------
+
+    def on_reserved(self, handler: Handler) -> Handler:
+        """Register a handler called after each newly created reservation.
+
+        Returns the handler so it doubles as a decorator. Does not fire
+        on idempotent cached returns (same ``request_id`` as a prior
+        reserve).
+        """
+        return self._events.register("reserved", handler)
+
+    def on_committed(self, handler: Handler) -> Handler:
+        """Register a handler called after each successful commit.
+
+        Returns the handler so it doubles as a decorator. Does not fire
+        on idempotent re-commits (state already ``committed``).
+        """
+        return self._events.register("committed", handler)
+
+    def on_released(self, handler: Handler) -> Handler:
+        """Register a handler called after a caller-initiated release.
+
+        Returns the handler so it doubles as a decorator. Does not fire
+        on the bulk sweep path — see :mod:`snipz.events`.
+        """
+        return self._events.register("released", handler)
+
+    def on_overrun(self, handler: Handler) -> Handler:
+        """Register a handler called when a commit succeeds via the late path.
+
+        Fires *in addition to* the ``committed`` handler when
+        :class:`Reservation` was already released by the sweeper but
+        the caller's commit reclaimed it.
+        """
+        return self._events.register("overrun", handler)
 
     async def migrate(self) -> None:
         """Apply pending schema migrations."""
@@ -370,7 +411,7 @@ class Budget:
         expires_at = ledger.compute_expires_at(now, ttl)
 
         try:
-            return await self._reserve_tx(
+            reservation = await self._reserve_tx(
                 scopes=sorted_scopes,
                 estimated_cents=estimated_cents,
                 request_id=request_id,
@@ -382,6 +423,8 @@ class Budget:
         except RequestIdConflictError:
             # Concurrent request_id collision — another writer landed
             # first. Re-query to converge on the canonical reservation.
+            # No on_reserved event: this code path returns a cached
+            # reservation whose original creation already fired.
             if request_id is None:
                 raise
             cached = await self._reservation_by_request_id(request_id)
@@ -391,6 +434,9 @@ class Budget:
                 # Surface as the original error.
                 raise
             return cached
+
+        await self._events.fire("reserved", reservation)
+        return reservation
 
     async def sweep(self) -> int:
         """Release reservations whose ``expires_at`` has passed.
