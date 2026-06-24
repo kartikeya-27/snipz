@@ -73,9 +73,30 @@ def main(argv: list[str] | None = None) -> int:
         help="Upstream JSON URL (default: LiteLLM's vendored catalogue).",
     )
 
+    sw = sub.add_parser(
+        "sweep",
+        help="Release expired reservations (one-shot or looping).",
+    )
+    sw.add_argument(
+        "--db",
+        required=True,
+        help="Backend spec: SQLite path or 'postgres://...' connection string.",
+    )
+    sw.add_argument(
+        "--interval",
+        type=float,
+        default=None,
+        help=(
+            "If set, loop sweeping every N seconds until SIGINT/SIGTERM. "
+            "Omit for a one-shot sweep (cron / scheduler use)."
+        ),
+    )
+
     args = parser.parse_args(argv)
     if args.command == "update-pricing":
         return _cmd_update_pricing(args.output, args.source)
+    if args.command == "sweep":
+        return _cmd_sweep(args.db, args.interval)
     # argparse already enforces `required=True`, but keep mypy happy.
     return 0  # pragma: no cover
 
@@ -115,6 +136,62 @@ def _fetch_upstream(url: str) -> Any:
     with urlopen(url, timeout=30) as response:  # noqa: S310 — caller supplies URL
         raw = response.read()
     return json.loads(raw)
+
+
+# ---------------------------------------------------------------------------
+# sweep
+# ---------------------------------------------------------------------------
+
+
+def _cmd_sweep(db: str, interval: float | None) -> int:
+    """CLI handler for ``snipz sweep`` — one-shot or looping."""
+    import asyncio
+    import logging
+
+    from snipz import Budget
+    from snipz.sweep import sweep_loop, sweep_once
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    )
+
+    async def run() -> int:
+        budget = Budget(db)
+        try:
+            if interval is None:
+                return await sweep_once(budget)
+            stop = asyncio.Event()
+            _install_sweep_signal_handlers(stop)
+            return await sweep_loop(budget, interval=interval, stop=stop)
+        finally:
+            await budget.close()
+
+    total = asyncio.run(run())
+    print(f"Released {total} expired reservations.", file=sys.stderr)
+    return 0
+
+
+def _install_sweep_signal_handlers(stop: Any) -> None:
+    """Install portable SIGINT/SIGTERM handlers that set ``stop``.
+
+    Uses ``signal.signal`` rather than ``loop.add_signal_handler`` so the
+    same code works on Unix and Windows. Failures (signal not available
+    on this platform, not in main thread) are silently ignored — the
+    sweeper still works, just without graceful early-stop.
+    """
+    import asyncio
+    import signal
+    from contextlib import suppress
+
+    loop = asyncio.get_running_loop()
+
+    def _handler(_signum: int, _frame: Any) -> None:
+        loop.call_soon_threadsafe(stop.set)
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        with suppress(OSError, ValueError):
+            signal.signal(sig, _handler)
 
 
 # ---------------------------------------------------------------------------
