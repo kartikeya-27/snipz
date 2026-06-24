@@ -1,4 +1,4 @@
-# Brim Protocol — Specification v1.0 (DRAFT)
+# Snipz Protocol — Specification v1.0 (DRAFT)
 
 Last updated: 2026-05-06
 Status: **v1.0 DRAFT — comments open**
@@ -14,17 +14,17 @@ Until then, breaking changes within v1.0 DRAFT are permitted with notice.
 Implementations targeting v1.0 SHOULD pin to a specific DRAFT revision
 until v1.0 final ships.
 
-This document is the canonical wire specification for the Brim reservation
+This document is the canonical wire specification for the Snipz reservation
 ledger. A conforming implementation in any language reads this document once
 and produces a client that interoperates with every other conforming client
 against the same backing database.
 
-The Python library (`brim`), HTTP facade (`brim-server`), and the planned
-`brim-go` and `brim-node` clients are reference implementations of this
+The Python library (`snipz`), HTTP facade (`snipz-server`), and the planned
+`snipz-go` and `snipz-node` clients are reference implementations of this
 protocol. The protocol — not any particular implementation — is the
 canonical artifact.
 
-For positioning and roadmap see [brim.md](brim.md).
+For positioning and roadmap see [snipz.md](snipz.md).
 For the Python implementation's internals see [architecture.md](architecture.md).
 
 ---
@@ -45,11 +45,11 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY**
 in this document are to be interpreted as in RFC 2119.
 
 A client that fails any **MUST** clause is non-conforming and **MUST NOT**
-ship under the Brim name.
+ship under the Snipz name.
 
 ## 3. Conceptual model
 
-Brim is a *reservation ledger*. Three operations form the lifecycle:
+Snipz is a *reservation ledger*. Three operations form the lifecycle:
 
 ```
                 reserve()
@@ -94,10 +94,10 @@ Every conforming installation **MUST** carry these tables, with these column
 names, types, and constraints. Additional columns **MAY** be added by an
 implementation as long as they are nullable or defaulted.
 
-### 5.1 `brim_limits`
+### 5.1 `snipz_limits`
 
 ```sql
-CREATE TABLE brim_limits (
+CREATE TABLE snipz_limits (
     scope_type   TEXT NOT NULL,
     scope_id     TEXT NOT NULL,
     window       TEXT NOT NULL,
@@ -112,10 +112,10 @@ CREATE TABLE brim_limits (
 
 `window` **MUST** be one of: `minute`, `hour`, `day`, `month`, `lifetime`.
 
-### 5.2 `brim_ledger`
+### 5.2 `snipz_ledger`
 
 ```sql
-CREATE TABLE brim_ledger (
+CREATE TABLE snipz_ledger (
     id               UUID PRIMARY KEY,
     reservation_id   UUID NOT NULL,
     scope_type       TEXT NOT NULL,
@@ -138,19 +138,19 @@ CREATE TABLE brim_ledger (
 
 ```sql
 CREATE INDEX idx_ledger_scope_window
-  ON brim_ledger (scope_type, scope_id, created_at DESC)
+  ON snipz_ledger (scope_type, scope_id, created_at DESC)
   WHERE state IN ('reserved', 'committed');
 
 CREATE INDEX idx_ledger_expiring
-  ON brim_ledger (expires_at)
+  ON snipz_ledger (expires_at)
   WHERE state = 'reserved';
 
 CREATE UNIQUE INDEX idx_ledger_request_id
-  ON brim_ledger (request_id)
+  ON snipz_ledger (request_id)
   WHERE request_id IS NOT NULL;
 
 CREATE INDEX idx_ledger_reservation_id
-  ON brim_ledger (reservation_id);
+  ON snipz_ledger (reservation_id);
 ```
 
 The `UNIQUE INDEX` on `request_id` is **load-bearing for idempotency** and
@@ -163,7 +163,7 @@ the *behavior* is normative, not the exact statements.
 
 ### 6.1 `set_limit(scope, cap_cents, grace_pct=0)`
 
-Insert or update a row in `brim_limits`. **MUST** be idempotent.
+Insert or update a row in `snipz_limits`. **MUST** be idempotent.
 
 ### 6.2 `reserve(scopes, estimated_cents, request_id?, ttl, metadata?) → Reservation`
 
@@ -177,11 +177,11 @@ no insert.
 
 1. **BEGIN.**
 2. For each scope in `scopes`, sorted by `(scope_type, scope_id, window)`:
-   `SELECT … FOR UPDATE` the matching `brim_limits` row.
+   `SELECT … FOR UPDATE` the matching `snipz_limits` row.
 3. For each scope, compute *current spend* using the [cap-check formula](#7-cap-check-formula).
 4. For each scope: if `spent + estimated_cents > cap_cents × (1 + grace_pct / 100)`,
    raise `BudgetExceededError` and **ROLLBACK**.
-5. For each scope, `INSERT` one row into `brim_ledger` with
+5. For each scope, `INSERT` one row into `snipz_ledger` with
    `state='reserved'`, the supplied `estimated_cents`, the supplied
    `request_id`, and `expires_at = now() + ttl`. All inserts **MUST** share
    the same generated `reservation_id`.
@@ -200,7 +200,7 @@ Update the `actual_cents` column on every row of the reservation that is
 still in state `reserved`. **MUST** be safe to call repeatedly.
 
 ```sql
-UPDATE brim_ledger
+UPDATE snipz_ledger
    SET actual_cents = $1
  WHERE reservation_id = $2 AND state = 'reserved';
 ```
@@ -211,7 +211,7 @@ Settle the reservation as committed.
 
 1. Attempt the **normal transition** (`reserved → committed`):
    ```sql
-   UPDATE brim_ledger
+   UPDATE snipz_ledger
       SET state = 'committed', actual_cents = $1, settled_at = $2
     WHERE reservation_id = $3 AND state = 'reserved';
    ```
@@ -219,7 +219,7 @@ Settle the reservation as committed.
 3. Otherwise attempt the **late-commit transition**
    (`released[late=true] → committed[late=true]`):
    ```sql
-   UPDATE brim_ledger
+   UPDATE snipz_ledger
       SET state = 'committed', actual_cents = $1, settled_at = $2, late = TRUE
     WHERE reservation_id = $3 AND state = 'released' AND late = TRUE;
    ```
@@ -234,7 +234,7 @@ Refund the reservation. **MUST** be a no-op if the reservation is already
 `committed` or `released`.
 
 ```sql
-UPDATE brim_ledger
+UPDATE snipz_ledger
    SET state = 'released', settled_at = $1
  WHERE reservation_id = $2 AND state = 'reserved';
 ```
@@ -244,7 +244,7 @@ UPDATE brim_ledger
 Background operation. Releases reservations whose `expires_at` has passed.
 
 ```sql
-UPDATE brim_ledger
+UPDATE snipz_ledger
    SET state = 'released', late = TRUE, settled_at = $1
  WHERE state = 'reserved' AND expires_at < $2;
 ```
@@ -264,7 +264,7 @@ SELECT COALESCE(SUM(
     WHEN state = 'reserved'  THEN GREATEST(COALESCE(actual_cents, 0), estimated_cents)
   END
 ), 0) AS spent
-  FROM brim_ledger
+  FROM snipz_ledger
  WHERE scope_type = $1 AND scope_id = $2
    AND state IN ('reserved', 'committed')
    AND created_at >= $3;   -- window start
@@ -418,7 +418,7 @@ from any client implementation's version.
 - **Major** (x.0.0): breaking change. Schema migrations required. Old clients
   may not interoperate with new servers.
 
-A `brim_schema_version` table **MUST** record the highest applied
+A `snipz_schema_version` table **MUST** record the highest applied
 migration; clients **SHOULD** check it on startup and refuse to run against
 an incompatible version.
 
@@ -426,12 +426,12 @@ an incompatible version.
 
 | Implementation | Language | Status |
 |---|---|---|
-| `brim` | Python (sync + async) | Phase 1 complete |
-| `brim-server` | Python / FastAPI | Phase 8.5 |
-| `brim-go` | Go | Phase 8.5 |
-| `brim-node` | Node / TypeScript | Phase 8.5 |
+| `snipz` | Python (sync + async) | Phase 1 complete |
+| `snipz-server` | Python / FastAPI | Phase 8.5 |
+| `snipz-go` | Go | Phase 8.5 |
+| `snipz-node` | Node / TypeScript | Phase 8.5 |
 
-A community implementation in any language **MAY** request "official Brim
+A community implementation in any language **MAY** request "official Snipz
 client" status by passing the conformance suite and demonstrating
 interoperability against the polyglot demo (one DB, three workers in three
 languages, one $5 cap).
@@ -508,7 +508,7 @@ know exactly what is still squishy and what to watch for.
 - **`metadata` size cap.** §12 says SHOULD ≤ 4 KiB. May tighten to a
   hard limit if profiling shows it material; will stay SHOULD if not.
 
-- **Schema version table.** Referenced in §16 ("`brim_schema_version`
+- **Schema version table.** Referenced in §16 ("`snipz_schema_version`
   table MUST record the highest applied migration") but not defined in
   §5. Will add to §5 in the next DRAFT revision.
 

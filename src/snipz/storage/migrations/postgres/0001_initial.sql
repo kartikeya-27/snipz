@@ -1,5 +1,5 @@
--- Brim schema v1 — PostgreSQL dialect.
--- Lockstep with src/brim/storage/migrations/sqlite/0001_initial.sql.
+-- Snipz schema v1 — PostgreSQL dialect.
+-- Lockstep with src/snipz/storage/migrations/sqlite/0001_initial.sql.
 --
 -- Differences from the SQLite dialect:
 --   * Native UUID, JSONB, BOOLEAN, TIMESTAMPTZ, NUMERIC(20, 6).
@@ -7,7 +7,7 @@
 --   * `created_at` / `updated_at` use NOW() instead of strftime.
 --   * Indexes are written as PostgreSQL partial indexes (same shape as SQLite).
 
-CREATE TABLE brim_limits (
+CREATE TABLE snipz_limits (
     scope_type   TEXT           NOT NULL,
     scope_id     TEXT           NOT NULL,
     -- ``window`` is a reserved keyword in PostgreSQL (used for window functions
@@ -22,7 +22,7 @@ CREATE TABLE brim_limits (
     PRIMARY KEY (scope_type, scope_id, "window")
 );
 
-CREATE TABLE brim_ledger (
+CREATE TABLE snipz_ledger (
     id              UUID           PRIMARY KEY,
     reservation_id  UUID           NOT NULL,
     scope_type      TEXT           NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE brim_ledger (
     CHECK (state != 'committed' OR actual_cents IS NOT NULL)
 );
 
-CREATE TABLE brim_pricing (
+CREATE TABLE snipz_pricing (
     provider                TEXT           NOT NULL,
     model                   TEXT           NOT NULL,
     input_cents_per_m       NUMERIC(20, 6) NOT NULL,
@@ -55,28 +55,28 @@ CREATE TABLE brim_pricing (
     PRIMARY KEY (provider, model, valid_from)
 );
 
-CREATE TABLE brim_schema_version (
+CREATE TABLE snipz_schema_version (
     version    INTEGER     PRIMARY KEY,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Hot path: cap-check aggregate over current window.
 CREATE INDEX idx_ledger_scope_window
-    ON brim_ledger (scope_type, scope_id, created_at DESC)
+    ON snipz_ledger (scope_type, scope_id, created_at DESC)
     WHERE state IN ('reserved', 'committed');
 
 -- Sweeper: find expired reservations fast.
 CREATE INDEX idx_ledger_expiring
-    ON brim_ledger (expires_at)
+    ON snipz_ledger (expires_at)
     WHERE state = 'reserved';
 
 -- Idempotency: O(1) request_id lookup; partial so NULLs are not constrained.
 CREATE UNIQUE INDEX idx_ledger_request_id
-    ON brim_ledger (request_id)
+    ON snipz_ledger (request_id)
     WHERE request_id IS NOT NULL;
 
 -- Multi-scope reservation grouping.
 CREATE INDEX idx_ledger_reservation_id
-    ON brim_ledger (reservation_id);
+    ON snipz_ledger (reservation_id);
 
-INSERT INTO brim_schema_version (version) VALUES (1);
+INSERT INTO snipz_schema_version (version) VALUES (1);

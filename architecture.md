@@ -1,8 +1,8 @@
-# Brim — Architecture and Schema
+# Snipz — Architecture and Schema
 
 Last updated: 2026-05-05
 
-Companion to [brim.md](brim.md), which covers positioning and the build plan. This document is the engineering reference: how Brim is structured, how it persists state, and the design decisions that lock those choices in.
+Companion to [snipz.md](snipz.md), which covers positioning and the build plan. This document is the engineering reference: how Snipz is structured, how it persists state, and the design decisions that lock those choices in.
 
 ---
 
@@ -11,7 +11,7 @@ Companion to [brim.md](brim.md), which covers positioning and the build plan. Th
 ```
 ┌─────────────────────────────────────────────────┐
 │  Provider integrations (optional)               │
-│  brim-anthropic, brim-openai                  │
+│  snipz-anthropic, snipz-openai                  │
 └─────────────────┬───────────────────────────────┘
                   │ uses
 ┌─────────────────▼───────────────────────────────┐
@@ -38,7 +38,7 @@ Companion to [brim.md](brim.md), which covers positioning and the build plan. Th
 ## Module layout
 
 ```
-brim/
+snipz/
   __init__.py            # public re-exports
   core.py                # Budget, Reservation, BudgetExceededError
   ledger.py              # SQL transactions, cap arithmetic
@@ -64,7 +64,7 @@ brim/
   decorator.py           # @budget.guard
   events.py              # hook system
   sweep.py               # reservation expirer
-  cli.py                 # `brim` entry point
+  cli.py                 # `snipz` entry point
 ```
 
 ## Core types
@@ -174,7 +174,7 @@ This is a documented caller responsibility — the library cannot detect "billab
 The sweeper does **not** lock the limit row when releasing expired reservations:
 
 ```sql
-UPDATE brim_ledger
+UPDATE snipz_ledger
    SET state = 'released', late = TRUE
  WHERE state = 'reserved'
    AND expires_at < NOW();
@@ -208,8 +208,8 @@ COMMIT                              │
 Async is the source of truth. Sync wrappers run the async core via a dedicated background event loop, so sync users do not fight asyncio:
 
 ```python
-from brim import Budget          # sync API (experimental in Phase 2)
-from brim.aio import AsyncBudget  # async API
+from snipz import Budget          # sync API (experimental in Phase 2)
+from snipz.aio import AsyncBudget  # async API
 ```
 
 Sync calls from inside an active event loop raise a clear error rather than deadlocking. Same backends, same SQL, same correctness guarantees.
@@ -249,7 +249,7 @@ All user-supplied values flow as bound parameters. SQL is never built via string
 
 ```sql
 -- One row per (scope, window). The cap definition.
-CREATE TABLE brim_limits (
+CREATE TABLE snipz_limits (
     scope_type   TEXT NOT NULL,    -- 'user' | 'tenant' | 'feature' | 'global'
     scope_id     TEXT NOT NULL,
     window       TEXT NOT NULL,    -- 'minute' | 'hour' | 'day' | 'month' | 'lifetime'
@@ -262,7 +262,7 @@ CREATE TABLE brim_limits (
 );
 
 -- Append-mostly. One row per (reservation, scope).
-CREATE TABLE brim_ledger (
+CREATE TABLE snipz_ledger (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     reservation_id   UUID NOT NULL,           -- groups multi-scope reservations
     scope_type       TEXT NOT NULL,
@@ -284,7 +284,7 @@ CREATE TABLE brim_ledger (
 );
 
 -- Provider × model → cost per 1M tokens. Versioned by valid_from.
-CREATE TABLE brim_pricing (
+CREATE TABLE snipz_pricing (
     provider                 TEXT NOT NULL,
     model                    TEXT NOT NULL,
     input_cents_per_m        NUMERIC(20, 6) NOT NULL,
@@ -295,7 +295,7 @@ CREATE TABLE brim_pricing (
     PRIMARY KEY (provider, model, valid_from)
 );
 
-CREATE TABLE brim_schema_version (
+CREATE TABLE snipz_schema_version (
     version    INT PRIMARY KEY,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -306,22 +306,22 @@ CREATE TABLE brim_schema_version (
 ```sql
 -- Hot path: cap-check aggregate over current window
 CREATE INDEX idx_ledger_scope_window
-  ON brim_ledger (scope_type, scope_id, created_at DESC)
+  ON snipz_ledger (scope_type, scope_id, created_at DESC)
   WHERE state IN ('reserved', 'committed');
 
 -- Sweeper: find expired reservations fast
 CREATE INDEX idx_ledger_expiring
-  ON brim_ledger (expires_at)
+  ON snipz_ledger (expires_at)
   WHERE state = 'reserved';
 
 -- Idempotency: O(1) request_id lookup
 CREATE UNIQUE INDEX idx_ledger_request_id
-  ON brim_ledger (request_id)
+  ON snipz_ledger (request_id)
   WHERE request_id IS NOT NULL;
 
 -- Multi-scope reservation grouping
 CREATE INDEX idx_ledger_reservation_id
-  ON brim_ledger (reservation_id);
+  ON snipz_ledger (reservation_id);
 ```
 
 ## The cap-check query
@@ -330,7 +330,7 @@ CREATE INDEX idx_ledger_reservation_id
 BEGIN;
 
 -- 1. Lock the limit row (no deadlock — scopes are sorted before locking)
-SELECT cap_cents, grace_pct FROM brim_limits
+SELECT cap_cents, grace_pct FROM snipz_limits
  WHERE scope_type = $1 AND scope_id = $2 AND window = $3
    AND enabled = TRUE
  FOR UPDATE;
@@ -342,7 +342,7 @@ SELECT COALESCE(SUM(
     WHEN state = 'reserved'  THEN GREATEST(COALESCE(actual_cents, 0), estimated_cents)
   END
 ), 0) AS spent
-  FROM brim_ledger
+  FROM snipz_ledger
  WHERE scope_type = $1 AND scope_id = $2
    AND state IN ('reserved', 'committed')
    AND created_at >= $4;   -- window start, computed in app code
@@ -350,7 +350,7 @@ SELECT COALESCE(SUM(
 -- 3. If spent + new_estimate > cap_cents * (1 + grace_pct/100): raise BudgetExceededError
 -- 4. Else INSERT the reservation row(s)
 
-INSERT INTO brim_ledger (...) VALUES (...);
+INSERT INTO snipz_ledger (...) VALUES (...);
 
 COMMIT;
 ```
@@ -383,7 +383,7 @@ A unique index on `request_id` is necessary but not sufficient — the reserve f
 
 1. **Pre-check** (outside the transaction):
    ```sql
-   SELECT id, ... FROM brim_ledger WHERE request_id = $1
+   SELECT id, ... FROM snipz_ledger WHERE request_id = $1
    ```
    If found → return that Reservation. No locking, no cap-check.
 
@@ -405,8 +405,8 @@ Guarantee: N parallel retries with the same `request_id` produce **exactly one l
 ## Migrations
 
 - Raw SQL files in `storage/migrations/`, numbered `0001_initial.sql`, `0002_*.sql`, ...
-- `brim_schema_version` tracks current version.
-- `brim migrate` applies pending migrations idempotently.
+- `snipz_schema_version` tracks current version.
+- `snipz migrate` applies pending migrations idempotently.
 - No Alembic in v0 — avoids a SQLAlchemy dependency.
 
 ## SQLite differences (handled inside the backend)
@@ -437,7 +437,7 @@ Locked-in choices, recorded so we don't relitigate them.
 7. **Postgres + SQLite only in v0** — no Redis, no MySQL, no DynamoDB. Add via the `Backend` protocol if demand exists.
 8. **Vendor LiteLLM's `pricing.toml`** — don't reinvent price tables.
 9. **Raw SQL migrations, no Alembic** — keeps the dependency tree small.
-10. **No monkey-patching of provider SDKs in core** — that lives in optional `brim-anthropic` / `brim-openai` packages.
+10. **No monkey-patching of provider SDKs in core** — that lives in optional `snipz-anthropic` / `snipz-openai` packages.
 11. **Cap-check SUM uses CASE on state** — `actual` for committed rows, `GREATEST(actual, estimated)` for reserved rows. A flat `GREATEST` over both states over-counts committed rows that came in under estimate. Surfaced during Phase 0 paper validation.
 12. **Idempotent reserve = SELECT-first → INSERT with unique-conflict recovery** — the unique index alone is not enough; flow must converge N parallel retries onto exactly one ledger row.
 13. **Streaming partial-failure = caller commits, not releases** — the provider already billed; the library cannot infer billability without provider-specific knowledge. Documented caller responsibility.

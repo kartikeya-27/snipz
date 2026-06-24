@@ -3,7 +3,7 @@
 Two classes:
 
 * :class:`SqliteLedgerConnection` — implements
-  :class:`brim.storage.LedgerConnection` over an ``aiosqlite.Connection``.
+  :class:`snipz.storage.LedgerConnection` over an ``aiosqlite.Connection``.
   Owns the dialect-specific stringification of UUIDs, datetimes, and
   booleans on the way down to the database, and parsing on the way up.
 
@@ -33,13 +33,13 @@ from uuid import UUID
 
 import aiosqlite
 
-from brim.storage import (
+from snipz.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
     RequestIdConflictError,
 )
-from brim.storage.sql import sqlite as sql
+from snipz.storage.sql import sqlite as sql
 
 # ---------------------------------------------------------------------------
 # Process-wide type adapters
@@ -99,7 +99,7 @@ _PRAGMAS: Final = (
     "PRAGMA busy_timeout = 5000",
 )
 
-_MIGRATIONS_PACKAGE: Final = "brim.storage.migrations.sqlite"
+_MIGRATIONS_PACKAGE: Final = "snipz.storage.migrations.sqlite"
 
 
 # ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class SqliteLedgerConnection:
     """LedgerConnection implementation backed by ``aiosqlite``.
 
     Wraps an open ``aiosqlite.Connection`` and dispatches to SQL
-    constants from :mod:`brim.storage.sql.sqlite`. Stringification of
+    constants from :mod:`snipz.storage.sql.sqlite`. Stringification of
     UUIDs, datetimes, and booleans happens here so the engine layer
     deals only in native Python types.
 

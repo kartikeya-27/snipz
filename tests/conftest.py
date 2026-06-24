@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from brim import Budget
+from snipz import Budget
 
 # ---------------------------------------------------------------------------
 # Pytest hooks: --postgres opt-in flag for tests marked @pytest.mark.postgres
@@ -55,7 +55,7 @@ def pytest_collection_modifyitems(
 @pytest_asyncio.fixture
 async def budget(tmp_path: Path) -> AsyncIterator[Budget]:
     """A migrated Budget instance backed by a per-test SQLite file."""
-    db = tmp_path / "brim.db"
+    db = tmp_path / "snipz.db"
     instance = Budget(db)
     await instance.migrate()
     try:
@@ -81,7 +81,7 @@ class FrozenClock:
 async def clocked_budget(tmp_path: Path) -> AsyncIterator[tuple[Budget, FrozenClock]]:
     """Budget with a frozen clock the test can advance."""
     clock = FrozenClock(datetime(2026, 5, 5, 12, 0, 0, tzinfo=UTC))
-    db = tmp_path / "brim.db"
+    db = tmp_path / "snipz.db"
     instance = Budget(db, now=clock)
     await instance.migrate()
     try:

@@ -1,8 +1,8 @@
 """Cap arithmetic and window helpers.
 
-Pure functions used by :mod:`brim.core`. All SQL is dispatched through
-:class:`brim.storage.LedgerConnection`; the per-dialect SQL constants
-live in :mod:`brim.storage.sql`. This module deliberately holds no
+Pure functions used by :mod:`snipz.core`. All SQL is dispatched through
+:class:`snipz.storage.LedgerConnection`; the per-dialect SQL constants
+live in :mod:`snipz.storage.sql`. This module deliberately holds no
 dialect or driver knowledge — it is safe to call from any backend.
 """
 
@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from brim.storage import LimitRow
+from snipz.storage import LimitRow
 
 __all__ = [
     "cap_with_grace",

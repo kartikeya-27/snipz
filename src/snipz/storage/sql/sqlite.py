@@ -10,7 +10,7 @@ Conventions:
   backend converts at the adapter boundary.
 
 The cap-check formula in :data:`SPEND_QUERY` matches the canonical
-formula in ``brim-protocol.md`` §7. Any change here MUST be mirrored
+formula in ``snipz-protocol.md`` §7. Any change here MUST be mirrored
 in the Postgres dialect and re-verified against the conformance suite.
 """
 
@@ -20,7 +20,7 @@ from typing import Final
 
 LIMIT_LOOKUP: Final = """
     SELECT cap_cents, grace_pct
-      FROM brim_limits
+      FROM snipz_limits
      WHERE scope_type = ? AND scope_id = ? AND window = ? AND enabled = 1
 """
 
@@ -40,7 +40,7 @@ SPEND_QUERY: Final = """
             WHEN state = 'reserved'  THEN MAX(COALESCE(actual_cents, 0), estimated_cents)
         END
     ), 0)
-      FROM brim_ledger
+      FROM snipz_ledger
      WHERE scope_type = ? AND scope_id = ?
        AND state IN ('reserved', 'committed')
        AND created_at >= ?
@@ -48,7 +48,7 @@ SPEND_QUERY: Final = """
 
 
 INSERT_LEDGER: Final = """
-    INSERT INTO brim_ledger (
+    INSERT INTO snipz_ledger (
         id, reservation_id, scope_type, scope_id, state, late,
         estimated_cents, actual_cents, model, provider,
         request_id, expires_at
@@ -59,7 +59,7 @@ INSERT_LEDGER: Final = """
 FIND_BY_REQUEST_ID: Final = """
     SELECT id, reservation_id, scope_type, scope_id, state, late,
            estimated_cents, actual_cents, request_id, expires_at, created_at
-      FROM brim_ledger
+      FROM snipz_ledger
      WHERE request_id = ?
 """
 
@@ -67,48 +67,48 @@ FIND_BY_REQUEST_ID: Final = """
 FIND_BY_RESERVATION_ID: Final = """
     SELECT id, reservation_id, scope_type, scope_id, state, late,
            estimated_cents, actual_cents, request_id, expires_at, created_at
-      FROM brim_ledger
+      FROM snipz_ledger
      WHERE reservation_id = ?
 """
 
 
 OBSERVE_UPDATE: Final = """
-    UPDATE brim_ledger
+    UPDATE snipz_ledger
        SET actual_cents = ?
      WHERE reservation_id = ? AND state = 'reserved'
 """
 
 
 COMMIT_NORMAL: Final = """
-    UPDATE brim_ledger
+    UPDATE snipz_ledger
        SET state = 'committed', actual_cents = ?, settled_at = ?
      WHERE reservation_id = ? AND state = 'reserved'
 """
 
 
 COMMIT_LATE: Final = """
-    UPDATE brim_ledger
+    UPDATE snipz_ledger
        SET state = 'committed', actual_cents = ?, settled_at = ?, late = 1
      WHERE reservation_id = ? AND state = 'released' AND late = 1
 """
 
 
 RELEASE_BY_CALLER: Final = """
-    UPDATE brim_ledger
+    UPDATE snipz_ledger
        SET state = 'released', settled_at = ?
      WHERE reservation_id = ? AND state = 'reserved'
 """
 
 
 SWEEP_EXPIRED: Final = """
-    UPDATE brim_ledger
+    UPDATE snipz_ledger
        SET state = 'released', late = 1, settled_at = ?
      WHERE state = 'reserved' AND expires_at < ?
 """
 
 
 UPSERT_LIMIT: Final = """
-    INSERT INTO brim_limits (scope_type, scope_id, window, cap_cents, grace_pct)
+    INSERT INTO snipz_limits (scope_type, scope_id, window, cap_cents, grace_pct)
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(scope_type, scope_id, window) DO UPDATE SET
         cap_cents = excluded.cap_cents,
@@ -119,8 +119,8 @@ UPSERT_LIMIT: Final = """
 
 SCHEMA_VERSION_TABLE_EXISTS: Final = (
     "SELECT name FROM sqlite_master "
-    "WHERE type = 'table' AND name = 'brim_schema_version'"
+    "WHERE type = 'table' AND name = 'snipz_schema_version'"
 )
 
 
-SCHEMA_VERSION_MAX: Final = "SELECT MAX(version) FROM brim_schema_version"
+SCHEMA_VERSION_MAX: Final = "SELECT MAX(version) FROM snipz_schema_version"

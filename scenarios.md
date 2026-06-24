@@ -1,4 +1,4 @@
-# Brim — Concurrency Scenarios (Phase 0 Paper Validation)
+# Snipz — Concurrency Scenarios (Phase 0 Paper Validation)
 
 Last updated: 2026-05-05
 
@@ -23,10 +23,10 @@ Tests: cap is never exceeded under concurrent reservations.
 ### Setup
 
 ```
-brim_limits:
+snipz_limits:
   ('user', 'u1', 'month', cap_cents=500.000000, grace_pct=0)
 
-brim_ledger (current month):
+snipz_ledger (current month):
   state='committed', estimated=495.000000, actual=495.000000
   -- $4.95 already spent
 ```
@@ -38,7 +38,7 @@ Two requests A and B arrive concurrently, each wanting to reserve $0.10.
 ```
 T=0ms   A: BEGIN
 T=0ms   B: BEGIN
-T=1ms   A: SELECT * FROM brim_limits WHERE (user,u1,month) FOR UPDATE
+T=1ms   A: SELECT * FROM snipz_limits WHERE (user,u1,month) FOR UPDATE
         → acquires lock; cap=500, grace=0
 T=1ms   B: SELECT FOR UPDATE → blocks waiting for A's lock
 T=2ms   A: SELECT SUM(...) → spent = 495
@@ -90,8 +90,8 @@ Tests: 10 parallel requests with the same `request_id` produce exactly one ledge
 ### Setup
 
 ```
-brim_limits: ('user', 'u1', 'month', cap_cents=10000)
-brim_ledger: (empty for this scope)
+snipz_limits: ('user', 'u1', 'month', cap_cents=10000)
+snipz_ledger: (empty for this scope)
 ```
 
 Caller fires the same `request_id='req_abc'` 10 times in parallel (network timeout caused retries while the original was actually still in flight).
@@ -99,17 +99,17 @@ Caller fires the same `request_id='req_abc'` 10 times in parallel (network timeo
 ### Required flow per request
 
 ```
-1. SELECT * FROM brim_ledger WHERE request_id = $1
+1. SELECT * FROM snipz_ledger WHERE request_id = $1
    If found → return existing Reservation. Done.
 
 2. BEGIN
-3. SELECT * FROM brim_limits WHERE ... FOR UPDATE
+3. SELECT * FROM snipz_limits WHERE ... FOR UPDATE
 4. SELECT SUM(...) → spent
 5. Check spent + estimate ≤ cap; if no, ROLLBACK and raise BudgetExceededError
-6. INSERT INTO brim_ledger (..., request_id = $1)
+6. INSERT INTO snipz_ledger (..., request_id = $1)
    On UNIQUE violation:
      ROLLBACK
-     SELECT * FROM brim_ledger WHERE request_id = $1
+     SELECT * FROM snipz_ledger WHERE request_id = $1
      return that Reservation
 7. COMMIT
 ```
@@ -148,8 +148,8 @@ Tests: `observe()` updates that drive actual past estimate are reflected correct
 ### Setup
 
 ```
-brim_limits: ('user', 'u1', 'month', cap_cents=1000)
-brim_ledger: (empty)
+snipz_limits: ('user', 'u1', 'month', cap_cents=1000)
+snipz_ledger: (empty)
 ```
 
 ### Trace
@@ -226,8 +226,8 @@ Tests: sweeper releases stuck reservations after TTL; late commits succeed with 
 ### Setup
 
 ```
-brim_limits: ('user', 'u1', 'month', cap_cents=1000)
-brim_ledger: (empty)
+snipz_limits: ('user', 'u1', 'month', cap_cents=1000)
+snipz_ledger: (empty)
 TTL = 300s
 ```
 
@@ -240,7 +240,7 @@ T=0s      R1: reserve(cents=500, ttl=300)
 T=10s     R1's process makes the API call; network stalls indefinitely.
 
 T=305s    Sweeper runs (every 60s).
-          UPDATE brim_ledger SET state='released', late=TRUE
+          UPDATE snipz_ledger SET state='released', late=TRUE
             WHERE state='reserved' AND expires_at < NOW()
           → R1's row updated.
 
@@ -253,7 +253,7 @@ T=310s    R2 arrives: reserve(cents=500)
 T=400s    R1's API call finally returns (network unstuck, response landed). 
           Caller invokes commit() with actual=480.
           
-          UPDATE brim_ledger 
+          UPDATE snipz_ledger 
             SET state='committed', actual_cents=480, late=TRUE, settled_at=NOW()
             WHERE id=R1 AND state='released' AND late=TRUE
           
@@ -286,11 +286,11 @@ Tests: a reserve against multiple scopes is atomic — if any cap fails, none ar
 ### Setup
 
 ```
-brim_limits:
+snipz_limits:
   ('tenant', 't1', 'month', cap_cents=20000)   -- $200 tenant cap
   ('user',   'u1', 'month', cap_cents=10000)   -- $100 user cap
 
-brim_ledger:
+snipz_ledger:
   ('tenant', 't1', state='committed', actual=19900)   -- tenant has $199 spent
 ```
 
@@ -305,7 +305,7 @@ Step 1  Sort scopes deterministically by (scope_type, scope_id, window):
 
 Step 2  BEGIN
 
-Step 3  SELECT * FROM brim_limits WHERE (tenant,t1,month) FOR UPDATE
+Step 3  SELECT * FROM snipz_limits WHERE (tenant,t1,month) FOR UPDATE
         → acquires; cap=20000
 
 Step 4  SELECT SUM(...) for tenant/t1 → spent=19900
@@ -334,7 +334,7 @@ Step 7  reservation_id = R = uuid_generate()
 Step 8  COMMIT
 ```
 
-`Reservation.commit()` later: `UPDATE brim_ledger SET state='committed', ... WHERE reservation_id=R` updates both rows atomically.
+`Reservation.commit()` later: `UPDATE snipz_ledger SET state='committed', ... WHERE reservation_id=R` updates both rows atomically.
 
 ### Deadlock check
 

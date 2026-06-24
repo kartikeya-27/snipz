@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from brim import Budget, BudgetExceededError, InvalidStateError, Scope
+from snipz import Budget, BudgetExceededError, InvalidStateError, Scope
 
 if TYPE_CHECKING:
     from tests.conftest import FrozenClock
@@ -257,7 +257,7 @@ async def test_pg_injected_pool_is_not_closed_by_backend() -> None:
     import asyncpg
     from testcontainers.postgres import PostgresContainer
 
-    from brim.storage.postgres import PostgresBackend
+    from snipz.storage.postgres import PostgresBackend
 
     container = PostgresContainer("postgres:16-alpine")
     container.start()

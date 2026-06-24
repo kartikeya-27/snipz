@@ -1,17 +1,17 @@
 """Storage backends and the :class:`LedgerConnection` abstraction.
 
 Each backend wraps its native driver in a class that satisfies the
-:class:`LedgerConnection` protocol. The engine (:mod:`brim.core` and
-:mod:`brim.ledger`) speaks only that interface; it never sees
+:class:`LedgerConnection` protocol. The engine (:mod:`snipz.core` and
+:mod:`snipz.ledger`) speaks only that interface; it never sees
 ``aiosqlite.Connection`` or ``asyncpg.Connection`` directly.
 
 Data classes (``LedgerRow``, ``LimitRow``, ``CommitOutcome``) live here
-rather than in :mod:`brim.ledger` because they are returned by
+rather than in :mod:`snipz.ledger` because they are returned by
 :class:`LedgerConnection` methods; placing them in the engine layer
 would create an upward dependency from storage into the engine.
 
-v0 ships :class:`brim.storage.sqlite.SqliteBackend` and
-:class:`brim.storage.postgres.PostgresBackend`. New backends can be
+v0 ships :class:`snipz.storage.sqlite.SqliteBackend` and
+:class:`snipz.storage.postgres.PostgresBackend`. New backends can be
 added without touching the engine by implementing :class:`Backend` and
 :class:`LedgerConnection`.
 """
@@ -62,7 +62,7 @@ class RequestIdConflictError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class LedgerRow:
-    """One row of ``brim_ledger``."""
+    """One row of ``snipz_ledger``."""
 
     id: UUID
     reservation_id: UUID
@@ -80,7 +80,7 @@ class LedgerRow:
 
 @dataclass(frozen=True, slots=True)
 class LimitRow:
-    """One row of ``brim_limits``."""
+    """One row of ``snipz_limits``."""
 
     cap_cents: Decimal
     grace_pct: int

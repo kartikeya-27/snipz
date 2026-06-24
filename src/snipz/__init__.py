@@ -1,13 +1,13 @@
-"""Brim — LLM cost reservation ledger.
+"""Snipz — LLM cost reservation ledger.
 
 Pre-flight reserve, commit on success, release on failure. Embedded library,
 Postgres-first, transactional under concurrent load. See ``architecture.md``
-for the design spec and ``brim.md`` for positioning and the build plan.
+for the design spec and ``snipz.md`` for positioning and the build plan.
 """
 
 from __future__ import annotations
 
-from brim.core import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
+from snipz.core import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
 
 __version__ = "0.0.1"
 

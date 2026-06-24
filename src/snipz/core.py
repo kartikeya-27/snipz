@@ -1,10 +1,10 @@
 """Reservation engine: ``Budget``, ``Reservation``, ``Scope``, ``BudgetExceededError``.
 
 This module owns the public API. It is dialect-agnostic: every storage
-operation is dispatched through :class:`brim.storage.LedgerConnection`,
+operation is dispatched through :class:`snipz.storage.LedgerConnection`,
 not against a driver-specific connection. Pure cap arithmetic helpers
-live in :mod:`brim.ledger`; SQL constants live in
-:mod:`brim.storage.sql`.
+live in :mod:`snipz.ledger`; SQL constants live in
+:mod:`snipz.storage.sql`.
 """
 
 from __future__ import annotations
@@ -18,9 +18,9 @@ from types import TracebackType
 from typing import Self
 from uuid import UUID
 
-from brim import ledger
-from brim.storage import Backend, CommitOutcome, RequestIdConflictError
-from brim.storage.sqlite import SqliteBackend
+from snipz import ledger
+from snipz.storage import Backend, CommitOutcome, RequestIdConflictError
+from snipz.storage.sqlite import SqliteBackend
 
 __all__ = [
     "Budget",
@@ -187,7 +187,7 @@ def _build_backend(spec: str | Path | Backend) -> Backend:
     """Resolve a backend specification to a concrete :class:`Backend`.
 
     * ``"postgres://..."`` / ``"postgresql://..."`` → :class:`PostgresBackend`
-      (the ``brim[postgres]`` extra must be installed).
+      (the ``snipz[postgres]`` extra must be installed).
     * Any other ``str`` or :class:`pathlib.Path` → :class:`SqliteBackend`,
       treating the value as a filesystem path.
     * Anything else is assumed to satisfy the :class:`Backend` protocol
@@ -196,7 +196,7 @@ def _build_backend(spec: str | Path | Backend) -> Backend:
     """
     if isinstance(spec, str):
         if spec.startswith(("postgres://", "postgresql://")):
-            from brim.storage.postgres import PostgresBackend
+            from snipz.storage.postgres import PostgresBackend
             return PostgresBackend(spec)
         return SqliteBackend(spec)
     if isinstance(spec, Path):
@@ -213,13 +213,13 @@ class Budget:
     Examples::
 
         # SQLite, file path
-        budget = Budget("brim.db")
+        budget = Budget("snipz.db")
 
         # Postgres, managed pool
-        budget = Budget("postgres://localhost/brim")
+        budget = Budget("postgres://localhost/snipz")
 
         # Postgres, injected pool (advanced)
-        from brim.storage.postgres import PostgresBackend
+        from snipz.storage.postgres import PostgresBackend
         backend = PostgresBackend(pool=app_pool)
         budget = Budget(backend)
 
@@ -250,7 +250,7 @@ class Budget:
         """Release backend-owned resources (pool, etc.).
 
         Idempotent. Safe to call from a sync context too via the
-        experimental :mod:`brim.sync` wrapper.
+        experimental :mod:`snipz.sync` wrapper.
         """
         await self._backend.close()
 
