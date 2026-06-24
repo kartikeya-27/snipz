@@ -254,6 +254,59 @@ class Budget:
         """
         await self._backend.close()
 
+    def guard(
+        self,
+        *,
+        scope: object,
+        estimate: object,
+        actual: object = None,
+        request_id: object = None,
+        ttl: int = 300,
+        model: object = None,
+        provider: object = None,
+    ) -> object:
+        """Return a decorator that wraps an async LLM call with budget enforcement.
+
+        Each parameter (``scope``, ``estimate``, ``actual``,
+        ``request_id``, ``model``, ``provider``) accepts either a
+        static value or a callable. Callables receive the wrapped
+        function's ``*args, **kwargs``; the special case is ``actual``,
+        which additionally receives the wrapped function's return
+        value as its first positional argument:
+        ``actual(response, *args, **kwargs)``.
+
+        Callables may return either a value or an awaitable; the
+        decorator awaits both transparently.
+
+        Example::
+
+            @budget.guard(
+                scope=lambda user_id, **kw: Scope("user", user_id),
+                estimate=lambda *a, **kw: Decimal("10"),
+                actual=lambda response, *a, **kw: pricing.cost(
+                    provider="anthropic", model="claude-3-5-sonnet-20241022",
+                    input_tokens=response.usage.input_tokens,
+                    output_tokens=response.usage.output_tokens,
+                ),
+            )
+            async def call_llm(user_id: str, prompt: str) -> Response:
+                return await anthropic.messages.create(...)
+
+        See :mod:`snipz.decorator` for the full contract.
+        """
+        from snipz.decorator import make_guard
+
+        return make_guard(
+            self,
+            scope=scope,
+            estimate=estimate,
+            actual=actual,  # type: ignore[arg-type]
+            request_id=request_id,
+            ttl=ttl,
+            model=model,
+            provider=provider,
+        )
+
     async def set_limit(
         self,
         scope: Scope,
