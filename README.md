@@ -53,6 +53,51 @@ pip install snipz[openai]          # + tiktoken for exact OpenAI token counting
 
 Both async and sync surfaces wrap the same engine and share the same correctness guarantees.
 
+## Cap-correctness benchmark
+
+`benchmarks/cap_correctness.py` is the proof: fire N concurrent reservations at a shared cap, verify the final committed spend equals the cap to the cent.
+
+**Headline:** 1000 concurrent reservations of $0.10 each against a $5.00 cap, on real Postgres:
+
+```
+Snipz Postgres pool near capacity (10/10). Consider increasing max_size for high-throughput environments.
+
+Snipz cap-correctness benchmark
+===============================
+  Concurrency: 1000
+  Cap:         $5.00
+  Per-req:     $0.10
+  Duration:    2.755s
+
+  Cap     [########################################] $5.00
+  Spend   [########################################] $5.00
+
+  Reservations attempted: 1000
+  Expected successes:     50
+  Actual successes:         50  (  5%)
+  Rejected (cap):          950  ( 95%)
+  Lock timeouts:             0  (  0%)
+  Other errors:              0  (  0%)
+
+  CAP HELD: $5.00 <= $5.00 (no overshoot)
+```
+
+Exactly 50 reservations committed, 950 raised `BudgetExceededError`, final spend `$5.00`. The lone log line above the chart is Snipz's own pool-utilization warning firing — observability is a feature (see [architecture.md](architecture.md) Decision Log #21).
+
+Reproduce it yourself with one command (requires Docker for the auto-spun Postgres container):
+
+```bash
+uv run python benchmarks/cap_correctness.py --testcontainers-postgres --concurrency 1000
+```
+
+No Docker? Run against SQLite at lower concurrency (SQLite serializes every writer on a single DB-wide lock; the cap still holds but high concurrency runs into lock-timeouts rather than cap-rejections):
+
+```bash
+uv run python benchmarks/cap_correctness.py            # 100 concurrent default
+```
+
+A live competitor comparison (vs. LiteLLM `BudgetManager`, Shekel) is Phase 8b.
+
 ## Design documents
 
 - [`snipz.md`](snipz.md) — positioning, competitor analysis, build phases.

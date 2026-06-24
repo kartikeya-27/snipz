@@ -102,5 +102,14 @@ disallow_untyped_decorators = true
 # - testcontainers: dev-only test fixture import; mypy does not check tests
 #   strictly here, but the override keeps the option open.
 [[tool.mypy.overrides]]
-module = ["asyncpg", "asyncpg.*", "testcontainers", "testcontainers.*"]
+module = [
+    "asyncpg",
+    "asyncpg.*",
+    "testcontainers",
+    "testcontainers.*",
+    # Optional benchmark dep; benchmarks/cap_correctness.py imports it
+    # only inside an `except ImportError` block, so absent stubs are fine.
+    "matplotlib",
+    "matplotlib.*",
+]
 ignore_missing_imports = true

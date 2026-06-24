@@ -4,6 +4,10 @@ __pycache__/
 *$py.class
 *.so
 
+# Benchmark output (the script regenerates these; the README links to a
+# committed snapshot in docs/ instead).
+benchmarks/output/
+
 # Virtual environments
 .venv/
 venv/
