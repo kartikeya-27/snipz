@@ -25,6 +25,10 @@ dependencies = [
 # Postgres backend. Install with `pip install snipz[postgres]`.
 # SQLite-only deployments (single-node, tests) do not need this.
 postgres = ["asyncpg>=0.30"]
+# OpenAI estimator. Install with `pip install snipz[openai]`.
+# Only needed when constructing OpenAIEstimator; Anthropic and fallback
+# estimators have no third-party deps.
+openai = ["tiktoken>=0.7"]
 
 [project.scripts]
 snipz = "snipz.cli:main"
@@ -40,6 +44,8 @@ dev = [
     # still run the SQLite tests cleanly.
     "asyncpg>=0.30",
     "testcontainers[postgres]>=4.0",
+    # OpenAI estimator dev dependency — needed to run estimator tests.
+    "tiktoken>=0.7",
 ]
 
 [build-system]
