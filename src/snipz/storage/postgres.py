@@ -38,6 +38,7 @@ from snipz.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
+    PricingRow,
     RequestIdConflictError,
 )
 from snipz.storage.sql import postgres as sql
@@ -254,6 +255,22 @@ class PostgresLedgerConnection:
             cap_cents,
             grace_pct,
         )
+
+    # -- pricing --------------------------------------------------------------
+
+    async def load_pricing(self) -> list[PricingRow]:
+        records = await self._conn.fetch(sql.LATEST_PRICING)
+        return [
+            PricingRow(
+                provider=record["provider"],
+                model=record["model"],
+                input_cents_per_m=record["input_cents_per_m"],
+                output_cents_per_m=record["output_cents_per_m"],
+                cache_read_cents_per_m=record["cache_read_cents_per_m"],
+                cache_write_cents_per_m=record["cache_write_cents_per_m"],
+            )
+            for record in records
+        ]
 
 
 def _parse_rowcount(status: str) -> int:

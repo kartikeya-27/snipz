@@ -1,0 +1,76 @@
+# Snipz vendored pricing seed.
+#
+# Minimal set of well-known models shipping with the package so that
+# Pricing.default() works out of the box. Prices are illustrative — for
+# authoritative figures and broader coverage, refresh via:
+#
+#     snipz update-pricing
+#
+# Format: each model is a TOML table at [<provider>."<model>"]. Prices
+# are stored as quoted strings to preserve Decimal precision (TOML's
+# native float would lose it).
+#
+# Units: cents per million tokens. Convert from "$X per million" by
+# multiplying X by 100. So $3/M input = "300".
+
+# ---------------------------------------------------------------------------
+# Anthropic
+# ---------------------------------------------------------------------------
+
+[anthropic."claude-3-5-sonnet-20241022"]
+input_cents_per_m = "300"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "30"
+cache_write_cents_per_m = "375"
+
+[anthropic."claude-3-opus-20240229"]
+input_cents_per_m = "1500"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "150"
+cache_write_cents_per_m = "1875"
+
+[anthropic."claude-3-haiku-20240307"]
+input_cents_per_m = "25"
+output_cents_per_m = "125"
+cache_read_cents_per_m = "3"
+cache_write_cents_per_m = "30"
+
+# ---------------------------------------------------------------------------
+# OpenAI
+# ---------------------------------------------------------------------------
+
+[openai."gpt-4o"]
+input_cents_per_m = "250"
+output_cents_per_m = "1000"
+
+[openai."gpt-4o-mini"]
+input_cents_per_m = "15"
+output_cents_per_m = "60"
+
+[openai."gpt-4-turbo"]
+input_cents_per_m = "1000"
+output_cents_per_m = "3000"
+
+[openai."gpt-3.5-turbo"]
+input_cents_per_m = "50"
+output_cents_per_m = "150"
+
+# ---------------------------------------------------------------------------
+# Google
+# ---------------------------------------------------------------------------
+
+[google."gemini-1.5-pro"]
+input_cents_per_m = "125"
+output_cents_per_m = "500"
+
+[google."gemini-1.5-flash"]
+input_cents_per_m = "7.5"
+output_cents_per_m = "30"
+
+# ---------------------------------------------------------------------------
+# Mistral
+# ---------------------------------------------------------------------------
+
+[mistral."mistral-large-latest"]
+input_cents_per_m = "200"
+output_cents_per_m = "600"

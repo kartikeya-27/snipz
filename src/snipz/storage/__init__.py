@@ -31,6 +31,7 @@ __all__ = [
     "LedgerConnection",
     "LedgerRow",
     "LimitRow",
+    "PricingRow",
     "RequestIdConflictError",
 ]
 
@@ -92,6 +93,25 @@ class CommitOutcome:
 
     rows_affected: int
     was_late: bool
+
+
+@dataclass(frozen=True, slots=True)
+class PricingRow:
+    """One row of ``snipz_pricing`` — the latest ``valid_from`` per scope.
+
+    Mirrored at the engine layer by :class:`snipz.PriceEntry` plus
+    ``(provider, model)`` identity. Lives here in storage so the
+    :class:`LedgerConnection` protocol can return it without importing
+    from the engine — preserving the unidirectional layering
+    (engine → storage, never the reverse).
+    """
+
+    provider: str
+    model: str
+    input_cents_per_m: Decimal
+    output_cents_per_m: Decimal
+    cache_read_cents_per_m: Decimal | None
+    cache_write_cents_per_m: Decimal | None
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +262,16 @@ class LedgerConnection(Protocol):
         grace_pct: int,
     ) -> None:
         """Configure or update a scope's cap."""
+        ...
+
+    async def load_pricing(self) -> list[PricingRow]:
+        """Return the latest pricing row per ``(provider, model)``.
+
+        Time-versioning is deferred — the row with the most recent
+        ``valid_from`` wins. Returns ``[]`` if the table is empty
+        (which is the normal case: pricing lives in the vendored TOML
+        until a deployment chooses to override).
+        """
         ...
 
 

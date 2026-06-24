@@ -26,6 +26,9 @@ dependencies = [
 # SQLite-only deployments (single-node, tests) do not need this.
 postgres = ["asyncpg>=0.30"]
 
+[project.scripts]
+snipz = "snipz.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8",

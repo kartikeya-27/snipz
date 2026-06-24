@@ -37,6 +37,7 @@ from snipz.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
+    PricingRow,
     RequestIdConflictError,
 )
 from snipz.storage.sql import sqlite as sql
@@ -322,6 +323,27 @@ class SqliteLedgerConnection:
             sql.UPSERT_LIMIT,
             (scope_type, scope_id, window, cap_cents, grace_pct),
         )
+
+    # -- pricing --------------------------------------------------------------
+
+    async def load_pricing(self) -> list[PricingRow]:
+        cur = await self._conn.execute(sql.LATEST_PRICING)
+        try:
+            rows = await cur.fetchall()
+        finally:
+            await cur.close()
+        return [_row_to_pricing(r) for r in rows]
+
+
+def _row_to_pricing(row: Sequence[object]) -> PricingRow:
+    return PricingRow(
+        provider=str(row[0]),
+        model=str(row[1]),
+        input_cents_per_m=Decimal(str(row[2])),
+        output_cents_per_m=Decimal(str(row[3])),
+        cache_read_cents_per_m=Decimal(str(row[4])) if row[4] is not None else None,
+        cache_write_cents_per_m=Decimal(str(row[5])) if row[5] is not None else None,
+    )
 
 
 def _row_to_ledger(row: Sequence[object]) -> LedgerRow:

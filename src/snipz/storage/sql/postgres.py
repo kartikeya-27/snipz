@@ -150,3 +150,24 @@ SCHEMA_VERSION_TABLE_EXISTS: Final = """
 
 
 SCHEMA_VERSION_MAX: Final = "SELECT MAX(version) FROM snipz_schema_version"
+
+
+# Latest pricing row per (provider, model). Time-versioning is deferred;
+# we always pick the most recent ``valid_from``. The same window-function
+# form works in SQLite; only the placeholder style differs (this dialect
+# has no parameters in the query so it is identical to the SQLite version).
+LATEST_PRICING: Final = """
+    SELECT provider, model,
+           input_cents_per_m, output_cents_per_m,
+           cache_read_cents_per_m, cache_write_cents_per_m
+      FROM (
+          SELECT provider, model,
+                 input_cents_per_m, output_cents_per_m,
+                 cache_read_cents_per_m, cache_write_cents_per_m,
+                 ROW_NUMBER() OVER (
+                     PARTITION BY provider, model ORDER BY valid_from DESC
+                 ) AS rn
+            FROM snipz_pricing
+      ) ranked
+     WHERE rn = 1
+"""
