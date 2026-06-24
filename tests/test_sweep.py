@@ -78,27 +78,35 @@ async def test_sweep_loop_exits_promptly_when_stop_set(budget: Budget) -> None:
 
 
 async def test_sweep_loop_runs_multiple_iterations(budget: Budget) -> None:
-    """With a short interval, several sweeps execute before stop is set."""
+    """With a short interval, several sweeps execute before stop is set.
+
+    Uses an event-driven barrier rather than wall-clock so the test is
+    deterministic on slow runners — the loop is only stopped after the
+    second iteration actually completes.
+    """
     stop = asyncio.Event()
+    second_iteration_done = asyncio.Event()
     counter = {"sweeps": 0}
 
     real_sweep = budget.sweep
 
     async def counting_sweep() -> int:
         counter["sweeps"] += 1
-        return await real_sweep()
+        result = await real_sweep()
+        if counter["sweeps"] >= 2:
+            second_iteration_done.set()
+        return result
 
     budget.sweep = counting_sweep  # type: ignore[method-assign]
 
-    async def stop_after_three() -> None:
-        # Wait long enough for ~3 iterations at 20ms intervals.
-        await asyncio.sleep(0.08)
+    async def stop_after_second_iteration() -> None:
+        await second_iteration_done.wait()
         stop.set()
 
-    setter = asyncio.create_task(stop_after_three())
+    setter = asyncio.create_task(stop_after_second_iteration())
     await asyncio.wait_for(
-        sweep_loop(budget, interval=0.02, stop=stop),
-        timeout=1.0,
+        sweep_loop(budget, interval=0.01, stop=stop),
+        timeout=5.0,
     )
     await setter
 
@@ -111,8 +119,13 @@ async def test_sweep_loop_runs_multiple_iterations(budget: Budget) -> None:
 
 
 async def test_sweep_loop_continues_after_iteration_error(budget: Budget) -> None:
-    """One iteration raising must not kill the loop."""
+    """One iteration raising must not kill the loop.
+
+    The stop signal fires only after a successful iteration *follows*
+    the failing one — so the assertion is deterministic.
+    """
     stop = asyncio.Event()
+    successful_iteration = asyncio.Event()
     calls = {"count": 0}
 
     real_sweep = budget.sweep
@@ -121,22 +134,24 @@ async def test_sweep_loop_continues_after_iteration_error(budget: Budget) -> Non
         calls["count"] += 1
         if calls["count"] == 1:
             raise RuntimeError("simulated transient failure")
-        return await real_sweep()
+        result = await real_sweep()
+        successful_iteration.set()
+        return result
 
     budget.sweep = flaky_sweep  # type: ignore[method-assign]
 
-    async def stop_after_two_iterations() -> None:
-        await asyncio.sleep(0.08)
+    async def stop_after_recovery() -> None:
+        await successful_iteration.wait()
         stop.set()
 
-    setter = asyncio.create_task(stop_after_two_iterations())
+    setter = asyncio.create_task(stop_after_recovery())
     await asyncio.wait_for(
-        sweep_loop(budget, interval=0.02, stop=stop),
-        timeout=1.0,
+        sweep_loop(budget, interval=0.01, stop=stop),
+        timeout=5.0,
     )
     await setter
 
-    # Loop survived the raise and called sweep again.
+    # Loop survived the raise and called sweep at least once more.
     assert calls["count"] >= 2
 
 

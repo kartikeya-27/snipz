@@ -295,19 +295,6 @@ class SqliteLedgerConnection:
             await cur.close()
         return [_row_to_ledger(r) for r in rows]
 
-    async def find_by_reservation_id(
-        self,
-        reservation_id: UUID,
-    ) -> list[LedgerRow]:
-        cur = await self._conn.execute(
-            sql.FIND_BY_RESERVATION_ID, (str(reservation_id),)
-        )
-        try:
-            rows = await cur.fetchall()
-        finally:
-            await cur.close()
-        return [_row_to_ledger(r) for r in rows]
-
     # -- limits ---------------------------------------------------------------
 
     async def upsert_limit(

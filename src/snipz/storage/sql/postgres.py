@@ -84,14 +84,6 @@ FIND_BY_REQUEST_ID: Final = """
 """
 
 
-FIND_BY_RESERVATION_ID: Final = """
-    SELECT id, reservation_id, scope_type, scope_id, state, late,
-           estimated_cents, actual_cents, request_id, expires_at, created_at
-      FROM snipz_ledger
-     WHERE reservation_id = $1
-"""
-
-
 OBSERVE_UPDATE: Final = """
     UPDATE snipz_ledger
        SET actual_cents = $1

@@ -144,7 +144,16 @@ def _fetch_upstream(url: str) -> Any:
 
 
 def _cmd_sweep(db: str, interval: float | None) -> int:
-    """CLI handler for ``snipz sweep`` — one-shot or looping."""
+    """CLI handler for ``snipz sweep`` — one-shot or looping.
+
+    Exit codes:
+
+    * ``0`` — sweep ran to completion (one-shot returned, or loop
+      stopped cleanly on SIGINT/SIGTERM).
+    * ``1`` — sweep raised an unhandled exception. The traceback is
+      printed; cron / scheduler monitors should treat this as a
+      hard failure.
+    """
     import asyncio
     import logging
 
@@ -155,6 +164,7 @@ def _cmd_sweep(db: str, interval: float | None) -> int:
         level=logging.INFO,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
+    log = logging.getLogger("snipz.cli")
 
     async def run() -> int:
         budget = Budget(db)
@@ -167,7 +177,11 @@ def _cmd_sweep(db: str, interval: float | None) -> int:
         finally:
             await budget.close()
 
-    total = asyncio.run(run())
+    try:
+        total = asyncio.run(run())
+    except Exception:
+        log.exception("snipz sweep failed; exiting non-zero")
+        return 1
     print(f"Released {total} expired reservations.", file=sys.stderr)
     return 0
 

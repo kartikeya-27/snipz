@@ -46,6 +46,7 @@ dev = [
     "testcontainers[postgres]>=4.0",
     # OpenAI estimator dev dependency — needed to run estimator tests.
     "tiktoken>=0.7",
+    "pytest-cov>=7.1.0",
 ]
 
 [build-system]

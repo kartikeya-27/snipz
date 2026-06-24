@@ -114,7 +114,9 @@ class Reservation:
                 f"observe() requires state 'reserved', got {self.state!r}"
             )
         if actual_cents < 0:
-            raise ValueError("actual_cents must be non-negative")
+            raise ValueError(
+                f"actual_cents must be non-negative, got {actual_cents}"
+            )
         await self._budget._observe(self.id, actual_cents)
         self.actual_cents = actual_cents
 
@@ -138,7 +140,7 @@ class Reservation:
         if cost is None:
             cost = self.actual_cents if self.actual_cents is not None else self.estimated_cents
         if cost < 0:
-            raise ValueError("actual_cents must be non-negative")
+            raise ValueError(f"actual_cents must be non-negative, got {cost}")
 
         outcome = await self._budget._commit(self.id, cost)
         if outcome.rows_affected == 0:

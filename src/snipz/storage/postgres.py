@@ -229,13 +229,6 @@ class PostgresLedgerConnection:
         records = await self._conn.fetch(sql.FIND_BY_REQUEST_ID, request_id)
         return [_record_to_ledger(r) for r in records]
 
-    async def find_by_reservation_id(
-        self,
-        reservation_id: UUID,
-    ) -> list[LedgerRow]:
-        records = await self._conn.fetch(sql.FIND_BY_RESERVATION_ID, reservation_id)
-        return [_record_to_ledger(r) for r in records]
-
     # -- limits ---------------------------------------------------------------
 
     async def upsert_limit(

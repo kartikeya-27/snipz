@@ -60,7 +60,6 @@ snipz/
       sqlite/            # numbered .sql files
       postgres/          # numbered .sql files (lockstep versions)
   sync.py                # sync wrapper (experimental, Phase 2)
-  aio.py                 # AsyncBudget re-export (async is the default)
   decorator.py           # @budget.guard
   events.py              # hook system
   sweep.py               # reservation expirer
@@ -208,8 +207,8 @@ COMMIT                              │
 Async is the source of truth. Sync wrappers run the async core via a dedicated background event loop, so sync users do not fight asyncio:
 
 ```python
-from snipz import Budget          # sync API (experimental in Phase 2)
-from snipz.aio import AsyncBudget  # async API
+from snipz import Budget          # async API (default)
+from snipz.sync import Budget as SyncBudget  # sync wrapper (experimental, Phase 2)
 ```
 
 Sync calls from inside an active event loop raise a clear error rather than deadlocking. Same backends, same SQL, same correctness guarantees.

@@ -197,13 +197,6 @@ class LedgerConnection(Protocol):
         """Return all ledger rows sharing a ``request_id`` (one per scope)."""
         ...
 
-    async def find_by_reservation_id(
-        self,
-        reservation_id: UUID,
-    ) -> list[LedgerRow]:
-        """Return all ledger rows sharing a ``reservation_id``."""
-        ...
-
     async def update_observation(
         self,
         reservation_id: UUID,

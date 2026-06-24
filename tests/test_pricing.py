@@ -425,3 +425,50 @@ async def test_with_backend_adds_models_not_in_vendored(
     )
     # Vendored entries still present.
     assert pricing.get("anthropic", "claude-3-5-sonnet-20241022") is not None
+
+
+async def test_with_backend_carries_cache_pricing_through_db_override(
+    sqlite_backend: tuple[SqliteBackend, Path],
+) -> None:
+    """A DB row with cache_read/write must end up on the merged ``PriceEntry``."""
+    backend, db_path = sqlite_backend
+    await _insert_db_pricing(
+        db_path,
+        provider="custom",
+        model="caching-model",
+        input_cpm="100",
+        output_cpm="200",
+        cache_read_cpm="10",
+        cache_write_cpm="125",
+    )
+    pricing = await Pricing.with_backend(backend)
+    entry = pricing.get("custom", "caching-model")
+    assert entry == PriceEntry(
+        input_cents_per_m=Decimal("100"),
+        output_cents_per_m=Decimal("200"),
+        cache_read_cents_per_m=Decimal("10"),
+        cache_write_cents_per_m=Decimal("125"),
+    )
+
+
+async def test_with_backend_computes_cost_using_db_override(
+    sqlite_backend: tuple[SqliteBackend, Path],
+) -> None:
+    """End-to-end: the override flows from ``with_backend`` through to ``cost()``."""
+    backend, db_path = sqlite_backend
+    await _insert_db_pricing(
+        db_path,
+        provider="anthropic",
+        model="claude-3-5-sonnet-20241022",
+        input_cpm="100",
+        output_cpm="500",
+    )
+    pricing = await Pricing.with_backend(backend)
+    # 1M input * 100 cents + 1M output * 500 cents = 600 cents.
+    cents = pricing.cost(
+        provider="anthropic",
+        model="claude-3-5-sonnet-20241022",
+        input_tokens=1_000_000,
+        output_tokens=1_000_000,
+    )
+    assert cents == Decimal("600")
