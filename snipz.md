@@ -1,6 +1,6 @@
 # Snipz — Positioning and Design Plan
 
-Last updated: 2026-05-05
+Last updated: 2026-06-25
 
 ## What it is
 
@@ -9,14 +9,15 @@ A Python library that enforces LLM cost limits as a **reservation ledger** — p
 ## Why it exists
 
 Every team building LLM features rebuilds cost guardrails from scratch. The closest things on the market are either:
+
 - gateways you route traffic through (Portkey, TrueFoundry, LiteLLM Proxy), or
 - importable libraries that *track* spend but cannot prevent over-spending under concurrency (LiteLLM `BudgetManager`, Shekel, litellm-cost-tracker).
 
-None ship a real reservation ledger. That is the gap.
+None ship a real reservation ledger. That is the gap Snipz fills.
 
 ---
 
-## Competitor landscape (May 2026)
+## Competitor landscape
 
 | Capability | LiteLLM BudgetManager (SDK) | Shekel | Portkey | LiteLLM Proxy | Snipz |
 |---|---|---|---|---|---|
@@ -37,12 +38,15 @@ None ship a real reservation ledger. That is the gap.
 ## What others lack — what Snipz delivers
 
 ### 1. Reservation-ledger semantics
-LiteLLM's BudgetManager and Shekel both estimate, check, call, log. If two requests arrive at $4.95 of a $5.00 cap concurrently, both pass the check and both execute — overshooting the cap. There is no atomic reserve-and-decrement.
 
-**Snipz:** pre-flight reserve inside a transaction with `SELECT FOR UPDATE` on the limit row. Commit on success, release on failure. The cap is never exceeded under concurrent load.
+LiteLLM's `BudgetManager` and Shekel both follow the same pattern: estimate, check, call, log. If two requests arrive at $4.95 of a $5.00 cap concurrently, both pass the check and both execute — overshooting the cap. There is no atomic reserve-and-decrement.
+
+**Snipz:** pre-flight reserve inside a transaction with `SELECT FOR UPDATE` on the limit row. Commit on success, release on failure. The cap is never exceeded under concurrent load. See the [cap-correctness benchmark](README.md#cap-correctness-benchmark) for the proof.
 
 ### 2. Postgres-first storage
+
 Shekel's distributed mode is Redis-only. LiteLLM SDK persists to JSON-on-disk. Neither offers:
+
 - Postgres — for teams who already run it and want one DB
 - SQLite — for single-node deployments and tests
 - Auditable, queryable spend history — a JSON blob is not a real ledger
@@ -50,93 +54,91 @@ Shekel's distributed mode is Redis-only. LiteLLM SDK persists to JSON-on-disk. N
 **Snipz:** protocol-based backends. Postgres and SQLite from day one. A schema you can query directly.
 
 ### 3. Streaming-native
-Neither competitor handles the case where actuals diverge from estimates mid-stream. With Anthropic's 200k-context responses this matters — a streaming response can blow through a tight cap before the SDK call returns.
+
+No competitor handles the case where actuals diverge from estimates mid-stream. With Anthropic's 200k-context responses this matters — a streaming response can blow through a tight cap before the SDK call returns.
 
 **Snipz:** `Reservation.observe()` updates actuals incrementally. If projected total breaches the cap, you can abort cooperatively. Reconciles correctly on partial failure.
 
 ---
 
-## Threat assessment
-
-- **Shekel** — 5 stars, single author, Redis-only, no reservations. Real but not a moat. Roughly 6–9 months of mind-share lead.
-- **LiteLLM BudgetManager** — bundled with a popular framework but architecturally weak. Assume someone PRs reservations into LiteLLM within ~12 months.
-
-That gives a window of roughly 12 months to ship a clearly better primitive and become the reference implementation.
-
-## Reuse vs. rebuild
-
-- **Do not fork Shekel.** Its monkey-patching architecture fights the reservation model — you would need to intercept *before* the SDK call, but Shekel intercepts *at* the SDK call. Architectural mismatch.
-- **Do reuse LiteLLM's pricing data.** They maintain prices for 100+ models, MIT-licensed. Vendor it.
-- **Do study Shekel's nested-budget DX.** `with budget(max_usd=5.00):` is good ergonomics. Adopt the pattern, replace the engine.
-
----
-
 ## Design steps
 
-### Phase 0 — Validate the reservation model on paper (1 day)
+### Phase 0 — Validate the reservation model on paper
+
 - Write the cap-check SQL with `SELECT FOR UPDATE`.
 - Walk through 5 concurrency scenarios: two requests at the cap, retry storm, streaming overrun, crashed reservation, idempotent retry.
 - Sanity-check the schema can answer "current spend per scope per window" in O(log n).
 
-### Phase 1 — Core engine (~250 LOC)
+### Phase 1 — Core engine
+
 - `Budget`, `Reservation`, `BudgetExceededError`, the SQL transactions.
 - No decorators, no estimators, no provider integrations yet.
 - API: `budget.reserve(scope, cents) → Reservation` with `commit()` / `release()` / `observe()`.
-- Property tests for cap arithmetic — this is where most projects get it wrong.
+- Property tests for cap arithmetic.
 
-### Phase 2 — Storage backends (~200 LOC)
+### Phase 2 — Storage backends
+
 - Protocol-based backend interface.
 - `storage/postgres.py` — production.
 - `storage/sqlite.py` — tests and single-node.
-- Migrations versioned (Alembic or hand-rolled).
+- Hand-rolled SQL migrations versioned per dialect (no Alembic dep).
 
-### Phase 3 — Pricing (~150 LOC)
-- Vendor LiteLLM's pricing TOML.
+### Phase 3 — Pricing
+
+- Vendor LiteLLM's pricing TOML (MIT-licensed).
 - `Pricing.cost(provider, model, input_tokens, output_tokens) → cents`.
-- `snipz update-pricing` CLI to refresh.
+- `snipz update-pricing` CLI to refresh from upstream.
+- Optional DB override layer via the `snipz_pricing` table.
 
-### Phase 4 — Estimators (~200 LOC)
-- `estimators/anthropic.py` — Anthropic token counter.
-- `estimators/openai.py` — tiktoken.
-- `estimators/fallback.py` — generic.
+### Phase 4 — Estimators
+
+- `estimators/anthropic.py` — char-based, Claude-tuned ratio + safety margin.
+- `estimators/openai.py` — exact via `tiktoken` (optional dep).
+- `estimators/fallback.py` — generic char-based, no deps.
 - Each returns `(input_tokens, max_output_tokens)`.
 
-### Phase 5 — Decorator API (~100 LOC)
-- `@budget.guard(scope=..., estimate=..., actual=...)` thin wrapper.
-- Match Shekel's `with budget(...)` ergonomics where it makes sense.
+### Phase 5 — Decorator API
 
-### Phase 6 — Reservation sweeper (~50 LOC)
+- `@budget.guard(scope=..., estimate=..., actual=...)` thin wrapper.
+- Match the `with budget(...)` ergonomics other libraries got right; replace the engine.
+
+### Phase 6 — Reservation sweeper
+
 - Background job to expire stuck reservations.
-- CLI: `snipz sweep --interval 60`.
+- CLI: `snipz sweep [--interval N]`.
 - Or callable from any existing scheduler.
 
-### Phase 7 — Events / hooks (~50 LOC)
+### Phase 7 — Events / hooks
+
 - `on_reserved`, `on_committed`, `on_released`, `on_overrun`.
 - Plug-in points for metrics, alerting, audit logs — no coupling.
 
 ### Phase 8 — The killer demo (the marketing artifact)
+
 - Concurrency correctness benchmark.
 - Fire 1000 concurrent requests against a $5 cap.
-- Verify Snipz never exceeds $5.
-- Show LiteLLM BudgetManager and Shekel exceeding the cap.
-- This is what sells the project — must ship before any landing-page work.
+- Verify Snipz never exceeds $5 to the cent.
+- This is what sells the project — landing-page work follows.
 
-### Phase 8.5 — Snipz Protocol and polyglot clients (~800 LOC across 3 packages)
+### Phase 8.5 — Snipz Protocol and polyglot clients
+
 - `snipz-protocol.md` — canonical spec: schema, cap-check transaction, state machine, idempotency, late-commit semantics. Versioned; breaking changes require a major bump.
-- `snipz-server` (~200 LOC, FastAPI) — HTTP facade over the Python library. Endpoints: `POST /reserve`, `POST /reservations/{id}/commit`, `POST /reservations/{id}/release`. Ships as a Docker image.
-- `snipz-go` (~300 LOC) — native Go client, direct Postgres access. Same correctness, no network hop.
-- `snipz-node` (~300 LOC) — native Node/TypeScript client.
-- Conformance suite — one set of YAML fixtures (composite scopes, idempotent retries, late commits, streaming overruns) executed against every client. Pass or don't ship under the Snipz name.
-- Polyglot demo: one Postgres, one $5 cap on `(user, u_42)`, 1000 concurrent reservations across Python + Go + Node workers simultaneously. Final spend ≤ $5.00 regardless of interleaving.
-- This is what turns Snipz from "a Python library" into "the standard for LLM cost limits." Must ship before Phase 9 — provider integrations reinforce the Python frame; the protocol breaks it.
+- `snipz-server` (FastAPI) — HTTP facade over the Python library. Endpoints: `POST /reserve`, `POST /reservations/{id}/commit`, `POST /reservations/{id}/release`. Ships as a Docker image.
+- `snipz-go` — native Go client, direct Postgres access. Same correctness, no network hop.
+- `snipz-node` — native Node/TypeScript client.
+- Conformance suite — one set of YAML fixtures (composite scopes, idempotent retries, late commits, streaming overruns) executed against every client.
+- Polyglot demo: one Postgres, one $5 cap, 1000 concurrent reservations across Python + Go + Node workers simultaneously. Final spend ≤ $5.00.
+- This is what turns Snipz from "a Python library" into "the standard for LLM cost limits." Ships before Phase 9 — provider integrations reinforce the Python frame; the protocol breaks it.
 
 ### Phase 9 — Provider integrations
+
 - `snipz-anthropic` — auto-wraps `anthropic.messages.create`.
 - `snipz-openai` — same for OpenAI.
 - Optional packages; core stays clean.
 
 ### Phase 10 — v0 release
-- README leads with the correctness story, not "no gateway."
+
+- README leads with the correctness story.
 - Three bullets:
   1. Reservation-ledger model — never overshoots the cap.
   2. Postgres-first — fits your existing stack.
@@ -169,6 +171,7 @@ Snipz is Python-first by design — the hot path is database I/O, not CPU. A Rus
 The hot path is `BEGIN → SELECT FOR UPDATE → SUM aggregate → INSERT → COMMIT`. Postgres takes 2–5 ms doing that. A Rust caller vs. a Python caller might shave 100 µs off the overhead — invisible next to the DB round-trip. There is no headline number to print today.
 
 Python also wins on:
+
 - Caller code is Python (token estimators, hooks, decorators, provider SDKs).
 - One `pyproject.toml` build vs. PyO3 + maturin + per-platform wheels.
 - Faster iteration on semantics — Phase 0–4 are about getting the design right.

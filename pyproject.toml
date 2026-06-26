@@ -56,6 +56,34 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/snipz"]
 
+[tool.hatch.build.targets.sdist]
+# Hatchling defaults to "everything not gitignored." The exclusions
+# below keep design docs, benchmarks, and dev metadata out of the
+# source distribution uploaded to PyPI. They are still tracked in
+# git and visible on GitHub — they just don't ship with `pip install`.
+#
+# Tests are included (convention: lets distros rebuild from source
+# and re-run the suite). README.md and pyproject.toml are included
+# automatically.
+exclude = [
+    # Internal positioning / roadmap — split into a notes.md before
+    # the public flip per the pre-public-presentation pass.
+    "snipz.md",
+    # Engineering / spec references — public on GitHub, but users
+    # who `pip install snipz` don't need them in the wheel/sdist.
+    "architecture.md",
+    "snipz-protocol.md",
+    "scenarios.md",
+    # Marketing artifact — proves the cap-correctness claim. The
+    # README embeds the result text; the runnable script lives in
+    # the repo, not the installed package.
+    "benchmarks",
+    # Dev metadata not relevant for end-user installation.
+    "uv.lock",
+    ".python-version",
+    ".gitignore",
+]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
