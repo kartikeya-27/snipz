@@ -1,0 +1,88 @@
+name: Release to PyPI
+
+# Tag-triggered release pipeline. Push a `v*.*.*` tag and this workflow:
+#   1. Checks out the repo at that exact commit.
+#   2. Verifies tag version matches pyproject.toml AND src/snipz/__init__.py
+#      (catches the v0.1.0 version-drift bug we caught manually).
+#   3. Runs the test suite (SQLite default; Postgres tests stay opt-in).
+#   4. Builds wheel + sdist with `uv build`.
+#   5. Publishes to PyPI via OIDC Trusted Publisher (no token needed).
+#   6. Creates a GitHub Release at the tag with the artifacts attached.
+#
+# One-time setup required on PyPI: see RELEASING.md.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  # `id-token: write` is the OIDC credential PyPI's Trusted Publisher
+  # consumes. Without it, the publish step has no way to authenticate.
+  id-token: write
+  # `contents: write` lets the workflow create a GitHub Release at the tag.
+  contents: write
+
+jobs:
+  release:
+    name: Build, test, publish
+    runs-on: ubuntu-latest
+
+    # The `pypi` environment is conventional for PyPI publishing.
+    # If you want a manual-approval gate before publish (recommended
+    # for v1.0 and beyond), configure required reviewers on this
+    # environment in the GitHub repo settings.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/snipz/
+
+    steps:
+      - name: Checkout repo at tag
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.13
+        run: uv python install 3.13
+
+      - name: Verify tag version matches package version
+        run: |
+          set -euo pipefail
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PYPROJECT_VERSION=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          uv sync --quiet
+          INIT_VERSION=$(uv run python -c "import snipz; print(snipz.__version__)")
+          echo "tag:        $TAG_VERSION"
+          echo "pyproject:  $PYPROJECT_VERSION"
+          echo "__init__:   $INIT_VERSION"
+          if [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ] || [ "$TAG_VERSION" != "$INIT_VERSION" ]; then
+            echo "::error::Version drift detected — refusing to publish"
+            exit 1
+          fi
+
+      - name: Run test suite
+        run: uv run pytest --tb=short
+
+      - name: Run lint + typecheck
+        run: |
+          uv run ruff check src/ tests/ benchmarks/
+          uv run mypy src/snipz benchmarks/
+
+      - name: Build wheel + sdist
+        run: uv build
+
+      - name: Publish to PyPI (OIDC Trusted Publisher)
+        run: uv publish
+
+      - name: Create GitHub Release with artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/*.whl dist/*.tar.gz \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "Automated release. Live at https://pypi.org/project/snipz/${GITHUB_REF_NAME#v}/ — see [README](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/README.md) for the changelog and benchmark."
