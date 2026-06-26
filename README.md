@@ -2,7 +2,7 @@
 
 **An LLM cost reservation ledger for Python.** Cap your spend per user, per tenant, per feature — and never overshoot, even under concurrent load.
 
-> **Status:** v0.0.x — pre-1.0. The engine is feature-complete and the [cap-correctness benchmark](#cap-correctness-benchmark) passes on real Postgres. API may shift before v1.0.
+> **Status:** v0.1.x — pre-1.0. The engine is feature-complete and the [cap-correctness benchmark](#cap-correctness-benchmark) passes on real Postgres. API may shift before v1.0; pin `snipz>=0.1,<0.2` to allow patches and forbid breaks.
 
 ```python
 async with await budget.reserve(Scope("user", "u_42"), Decimal("10")) as r:

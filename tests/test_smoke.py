@@ -8,13 +8,25 @@ logic is covered by tests added in Phase 1.
 from __future__ import annotations
 
 import sqlite3
+import tomllib
 from importlib.resources import files
+from pathlib import Path
 
 import snipz
 
 
 def test_version_is_set() -> None:
-    assert snipz.__version__ == "0.0.1"
+    """``snipz.__version__`` MUST match ``pyproject.toml``'s ``version``.
+
+    Drift between these two slipped through during the v0.1.0 release
+    prep: the wheel installed as 0.1.0 while ``__version__`` still read
+    0.0.1. This test pins both to the same source of truth so the
+    failure mode never recurs.
+    """
+    pyproject = tomllib.loads(
+        (Path(__file__).parent.parent / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    assert snipz.__version__ == pyproject["project"]["version"]
 
 
 _SQLITE_MIGRATIONS = "snipz.storage.migrations.sqlite"
