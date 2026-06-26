@@ -38,12 +38,17 @@ jobs:
 
     steps:
       - name: Checkout repo at tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
+        # setup-uv v8 switched to immutable full-version tags; no @v8
+        # moving tag exists. Pin to the exact release. See
+        # https://github.com/astral-sh/setup-uv/releases.
+        # Caching is intentionally off: this workflow only fires on
+        # release tags (rare), the GitHub Actions cache service has
+        # had intermittent 400s, and the warm-cache savings are
+        # negligible vs the warning noise.
+        uses: astral-sh/setup-uv@v8.1.0
 
       - name: Install Python 3.13
         run: uv python install 3.13
