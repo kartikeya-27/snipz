@@ -2,7 +2,7 @@
 
 **An LLM cost reservation ledger for Python.** Cap your spend per user, per tenant, per feature — and never overshoot, even under concurrent load.
 
-> **Status:** v0.1.x — pre-1.0. The engine is feature-complete and the [cap-correctness benchmark](#cap-correctness-benchmark) passes on real Postgres. API may shift before v1.0; pin `snipz>=0.1,<0.2` to allow patches and forbid breaks.
+> **Status:** v0.2.x — pre-1.0. The engine is feature-complete; the [head-to-head benchmark](#head-to-head-correctness-benchmark) holds the cap on real Postgres at 1000 concurrent reservations while LiteLLM `BudgetManager` and Shekel overshoot by 20×. API may shift before v1.0; pin `snipz>=0.2,<0.3` to allow patches and forbid breaks.
 
 ```python
 async with await budget.reserve(Scope("user", "u_42"), Decimal("10")) as r:
@@ -15,51 +15,53 @@ async with await budget.reserve(Scope("user", "u_42"), Decimal("10")) as r:
 
 ## Why
 
-Every team building LLM features rebuilds cost guardrails from scratch. Existing libraries (LiteLLM `BudgetManager`, Shekel) follow an **estimate-then-record** pattern — they check the cap, run the call, then log the spend. Under concurrent load this lets two requests both pass a cap check at $4.95 of a $5.00 cap and both run, blowing the cap.
+Every team building LLM features rebuilds cost guardrails from scratch. Existing libraries (LiteLLM `BudgetManager`, Shekel) follow an **estimate-then-record** pattern — they check the cap, run the call, then log the spend. Under concurrent load this lets two requests both pass a cap check at $4.95 of a $5.00 cap and both run, blowing the cap. The [benchmark below](#head-to-head-correctness-benchmark) shows them overshooting a $5.00 cap by **20×** at 1000 concurrent — spending $100.00 instead of $5.00 — not a typo.
 
 Snipz is a **reservation ledger**: every call holds budget inside a transaction with `SELECT … FOR UPDATE` (or `BEGIN IMMEDIATE` on SQLite) before the LLM runs, commits the actual cost on success, releases on failure. The cap-check and the ledger insert are a single atomic step. The cap is never overshot.
 
 ---
 
-## Cap-correctness benchmark
+## Head-to-head correctness benchmark
 
-The proof: fire 1000 concurrent reservations of $0.10 each against a $5.00 cap on real Postgres.
+The proof: 1000 concurrent reservations of $0.10 each against a $5.00 cap. Same workload, three backends, side-by-side.
 
 ```
-Snipz Postgres pool near capacity (10/10). Consider increasing max_size for high-throughput environments.
-
-Snipz cap-correctness benchmark
-===============================
+Cap-correctness comparison — Snipz vs. estimate-then-record competitors
+=======================================================================
   Concurrency: 1000
   Cap:         $5.00
   Per-req:     $0.10
-  Duration:    2.755s
 
   Cap     [########################################] $5.00
-  Spend   [########################################] $5.00
 
-  Reservations attempted: 1000
-  Expected successes:     50
-  Actual successes:         50  (  5%)
-  Rejected (cap):          950  ( 95%)
-  Lock timeouts:             0  (  0%)
-  Other errors:              0  (  0%)
+  Snipz                 [########################################                                        ] $5.00    — ok (held)
+  LiteLLM BudgetManager [################################################################################] $100.00  — OVERSHOT by $95.00
+  Shekel                [################################################################################] $100.00  — OVERSHOT by $95.00
 
-  CAP HELD: $5.00 <= $5.00 (no overshoot)
+  Headline claim reproduced: Snipz held the cap; LiteLLM BudgetManager, Shekel overshot.
 ```
 
-Exactly 50 reservations committed, 950 raised `BudgetExceededError`, final spend `$5.00`. The line above the chart is Snipz's own pool-utilization warning firing — observability is a feature ([architecture.md](architecture.md) Decision Log #21).
+| Backend | Successes | Final spend | Cap held? | Duration |
+|---|---:|---:|:---:|---:|
+| **Snipz** (Postgres) | 50 / 1000 | **$5.00** | yes | 3.6s |
+| LiteLLM `BudgetManager` | 1000 / 1000 | $100.00 (20× cap) | no | 0.03s |
+| Shekel | 1000 / 1000 | $100.00 (20× cap) | no | 0.03s |
 
-Reproduce in one command (needs Docker for the auto-spun Postgres container):
+Snipz is ~120× slower per attempt — because it actually does the work: open a transaction, take a row lock, sum the ledger, check the cap, insert if OK, commit. The competitors are fast because they skip the lock entirely. Two concurrent callers both read `current_cost=0.00`, both pass the check, both write — at 1000 concurrent on a $5 cap, every single attempt commits.
+
+The benchmark uses a 1 ms simulated LLM-call gap between cap-check and cost-record. Real LLM calls are 100–2000 ms — the race window in production is **100–2000× larger** than the simulation. This is the conservative number.
+
+Reproduce in one command (needs Docker + the `bench-competitors` extra):
+
+```bash
+pip install "snipz[bench-competitors]"
+uv run python -m benchmarks.competitor_comparison --concurrency 1000
+```
+
+Or run just Snipz's single-backend cap-correctness benchmark (the same numbers, no competitors):
 
 ```bash
 uv run python benchmarks/cap_correctness.py --testcontainers-postgres --concurrency 1000
-```
-
-No Docker? Default SQLite scenario at 100 concurrent works without any setup:
-
-```bash
-uv run python benchmarks/cap_correctness.py
 ```
 
 ---
@@ -99,9 +101,10 @@ What you can rely on:
 ## Install
 
 ```bash
-pip install snipz                  # core: SQLite, async
-pip install snipz[postgres]        # + asyncpg for Postgres
-pip install snipz[openai]          # + tiktoken for exact OpenAI token counts
+pip install snipz                       # core: SQLite, async
+pip install snipz[postgres]             # + asyncpg for Postgres
+pip install snipz[openai]               # + tiktoken for exact OpenAI token counts
+pip install snipz[bench-competitors]    # + litellm, shekel to reproduce the head-to-head benchmark
 ```
 
 ---

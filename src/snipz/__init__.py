@@ -11,7 +11,7 @@ from snipz.core import Budget, BudgetExceededError, InvalidStateError, Reservati
 from snipz.estimators import Estimator
 from snipz.pricing import PriceEntry, Pricing, UnknownPricingError
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "Budget",

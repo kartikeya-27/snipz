@@ -1,6 +1,6 @@
 [project]
 name = "snipz"
-version = "0.1.0"
+version = "0.2.0"
 description = "LLM cost reservation ledger — pre-flight reserve, commit, release."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -29,6 +29,14 @@ postgres = ["asyncpg>=0.30"]
 # Only needed when constructing OpenAIEstimator; Anthropic and fallback
 # estimators have no third-party deps.
 openai = ["tiktoken>=0.7"]
+# Competitor libraries for the head-to-head correctness benchmark.
+# Install with `pip install snipz[bench-competitors]`.
+# Not needed for normal use of Snipz — only for running
+# benchmarks/competitor_comparison.py and the matching test cases.
+bench-competitors = [
+    "litellm>=1.0",
+    "shekel>=1.1",
+]
 
 [project.scripts]
 snipz = "snipz.cli:main"
@@ -78,6 +86,11 @@ exclude = [
     # README embeds the result text; the runnable script lives in
     # the repo, not the installed package.
     "benchmarks",
+    # Tests that import ``benchmarks.*``. Without the harness those
+    # tests can't run; shipping them in the sdist would break
+    # ``pytest`` for anyone rebuilding from source.
+    "tests/test_benchmark.py",
+    "tests/test_competitor_benchmark.py",
     # Dev metadata not relevant for end-user installation.
     "uv.lock",
     ".python-version",
@@ -139,5 +152,11 @@ module = [
     # only inside an `except ImportError` block, so absent stubs are fine.
     "matplotlib",
     "matplotlib.*",
+    # Optional bench-competitors deps. Both ship without published stubs
+    # and the adapter modules guard their imports.
+    "litellm",
+    "litellm.*",
+    "shekel",
+    "shekel.*",
 ]
 ignore_missing_imports = true
