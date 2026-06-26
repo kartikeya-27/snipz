@@ -53,7 +53,12 @@ jobs:
           set -euo pipefail
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           PYPROJECT_VERSION=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          uv sync --quiet
+          # Sync ALL extras so the typecheck step below sees the same
+          # code paths a local developer sees (litellm + shekel + asyncpg
+          # + tiktoken). Without this, mypy's `unused-ignore` warnings
+          # diverge between CI and local because some `# type: ignore`
+          # directives only fire when the optional dep is installed.
+          uv sync --all-extras --quiet
           INIT_VERSION=$(uv run python -c "import snipz; print(snipz.__version__)")
           echo "tag:        $TAG_VERSION"
           echo "pyproject:  $PYPROJECT_VERSION"
