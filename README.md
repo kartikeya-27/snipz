@@ -47,7 +47,7 @@ Cap-correctness comparison — Snipz vs. estimate-then-record competitors
 | LiteLLM `BudgetManager` | 1000 / 1000 | $100.00 (20× cap) | no | 0.03s |
 | Shekel | 1000 / 1000 | $100.00 (20× cap) | no | 0.03s |
 
-Snipz is ~120× slower per attempt — because it actually does the work: open a transaction, take a row lock, sum the ledger, check the cap, insert if OK, commit. The competitors are fast because they skip the lock entirely. Two concurrent callers both read `current_cost=0.00`, both pass the check, both write — at 1000 concurrent on a $5 cap, every single attempt commits.
+Snipz adds ~3.6 ms per reservation — a fraction of a percent on top of a 100–2000 ms LLM call. Against real LLM latency, the overhead is invisible: you pay single-digit milliseconds to make overshoot impossible. It does this by actually doing the work — open a transaction, take a row lock, sum the ledger, check the cap, insert if OK, commit. The competitors look ~120× faster in this microbenchmark only because they skip the lock entirely: two concurrent callers both read `current_cost=0.00`, both pass the check, both write — at 1000 concurrent on a $5 cap, every single attempt commits.
 
 The benchmark uses a 1 ms simulated LLM-call gap between cap-check and cost-record. Real LLM calls are 100–2000 ms — the race window in production is **100–2000× larger** than the simulation. This is the conservative number.
 
