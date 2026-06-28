@@ -76,6 +76,7 @@ scratchpad.md
 scratch/
 scratchpad/
 .scratch/
+usage-cycle.md
 
 # Local-only overrides — any file whose basename contains `.local.` is
 # treated as a personal copy that shouldn't be tracked. Convention is
