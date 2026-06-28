@@ -100,6 +100,8 @@ What you can rely on:
 
 ## Install
 
+**Requires Python 3.13+.** On older versions `pip install snipz` will report no compatible release.
+
 ```bash
 pip install snipz                       # core: SQLite, async
 pip install snipz[postgres]             # + asyncpg for Postgres
