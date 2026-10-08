@@ -9,6 +9,13 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.3.0] — 2026-10-09
+
+The **compatibility and pricing release**: installs on Python 3.11+, and
+`Pricing.default()` prices current models again.
+
 ### Changed
 
 - **Python floor lowered from 3.13 to 3.11.** Nothing in the engine needed
@@ -127,6 +134,7 @@ First public release. The reservation engine and everything around it.
 - **Cap-correctness benchmark** — `benchmarks/cap_correctness.py`, with a
   `--testcontainers-postgres` flag for a throwaway real database.
 
-[Unreleased]: https://github.com/kartikeya-27/snipz/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kartikeya-27/snipz/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/kartikeya-27/snipz/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/kartikeya-27/snipz/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kartikeya-27/snipz/releases/tag/v0.1.0
