@@ -16,6 +16,36 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
   `snipz.events` and one PEP 695 generic in `snipz.sync`, now spelled
   with `TypeAlias` / `TypeVar`. No runtime dependencies added. Python 3.10
   is not supported — it reaches end-of-life in October 2026.
+- **Vendored `pricing.toml` refreshed from LiteLLM** — 10 hand-seeded models
+  → 3,688 models across every LiteLLM provider, including the current Claude
+  (`claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`,
+  `claude-fable-5-1`), GPT-5, Gemini 2.5, Mistral, and xAI families. The file
+  is now exactly what `snipz update-pricing` emits; `Pricing.default()` loads
+  it in ~70 ms. Anthropic figures cross-checked against Anthropic's published
+  pricing page.
+
+  **Breaking for `Pricing.default()` lookups:** retired models LiteLLM no
+  longer lists are gone (`claude-3-5-sonnet-20241022`, `claude-3-opus-20240229`,
+  `claude-3-haiku-20240307`, `gemini-1.5-pro`, `gemini-1.5-flash`), and the
+  Gemini provider key is now LiteLLM's `"gemini"` rather than `"google"`. Pin
+  your own entries with `Pricing.from_toml` or the `snipz_pricing` table if you
+  still need them.
+
+### Fixed
+
+- **`snipz update-pricing` failed with HTTP 404.** LiteLLM moved its
+  catalogue; the default source is now
+  `model_prices_and_context_window.json` at the repo root.
+- **`snipz update-pricing` wrote unloadable TOML.** LiteLLM's `sample_spec`
+  placeholder has a prose `litellm_provider` that was emitted as a bare TOML
+  key, so `Pricing.from_toml` rejected the whole refreshed file. The
+  placeholder is now skipped, provider keys are quoted when they are not
+  legal bare keys, and model keys are escaped.
+- **Routed model ids were unreachable.** LiteLLM keys Mistral, xAI, and some
+  Gemini / DeepSeek models as `<provider>/<model>`, so
+  `cost(provider="mistral", model="codestral-latest")` never matched. The
+  prefix is stripped on refresh; when upstream lists a model both ways, the
+  unprefixed entry wins.
 
 ### Added
 

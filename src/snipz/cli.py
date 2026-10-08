@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from decimal import Decimal
 from pathlib import Path
@@ -33,7 +34,7 @@ __all__ = ["main"]
 # Authoritative source for model pricing — LiteLLM's vendored JSON.
 _LITELLM_PRICE_URL: str = (
     "https://raw.githubusercontent.com/BerriAI/litellm/main/"
-    "model_prices_and_context_window_backup.json"
+    "model_prices_and_context_window.json"
 )
 
 # Conversion factor: a price expressed as dollars per token becomes
@@ -42,6 +43,14 @@ _HUNDRED_MILLION: Decimal = Decimal("100000000")
 
 # Vendored pricing file location relative to this module.
 _VENDORED_PRICING: Path = Path(__file__).parent / "pricing.toml"
+
+# LiteLLM's catalogue opens with a documentation placeholder whose
+# ``litellm_provider`` is prose ("one of https://docs..."). It prices
+# nothing, so the translator drops it by name.
+_LITELLM_PLACEHOLDER_KEYS: frozenset[str] = frozenset({"sample_spec"})
+
+# TOML bare keys: ASCII letters, digits, underscore, dash.
+_TOML_BARE_KEY = re.compile(r"[A-Za-z0-9_-]+")
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +230,11 @@ def _litellm_to_toml(data: Any) -> str:
     non-LLM entries we cannot price). The output groups entries by
     provider and sorts deterministically so the file diffs cleanly
     across refreshes.
+
+    LiteLLM keys some providers' models by routing name
+    (``mistral/codestral-latest``); the ``<provider>/`` prefix is
+    stripped so lookups use the provider's own model id. When upstream
+    lists the same model both ways, the unprefixed entry wins.
     """
     by_provider: dict[str, dict[str, dict[str, str]]] = {}
 
@@ -228,7 +242,7 @@ def _litellm_to_toml(data: Any) -> str:
         data = {}
 
     for model_name, entry in data.items():
-        if not isinstance(entry, dict):
+        if model_name in _LITELLM_PLACEHOLDER_KEYS or not isinstance(entry, dict):
             continue
         provider = entry.get("litellm_provider")
         input_per_token = entry.get("input_cost_per_token")
@@ -249,7 +263,13 @@ def _litellm_to_toml(data: Any) -> str:
         if cache_write is not None:
             toml_entry["cache_write_cents_per_m"] = _to_cpm(cache_write)
 
-        by_provider.setdefault(provider, {})[model_name] = toml_entry
+        models = by_provider.setdefault(provider, {})
+        prefix = f"{provider}/"
+        if model_name.startswith(prefix):
+            model_name = model_name.removeprefix(prefix)
+            if model_name in models:
+                continue
+        models[model_name] = toml_entry
 
     lines: list[str] = [
         "# Snipz pricing — regenerated from LiteLLM upstream.",
@@ -258,12 +278,12 @@ def _litellm_to_toml(data: Any) -> str:
     ]
     for provider in sorted(by_provider):
         lines.append(f"# {'-' * 73}")
-        lines.append(f"# {provider}")
+        lines.append(f"# {_toml_key(provider)}")
         lines.append(f"# {'-' * 73}")
         lines.append("")
         for model in sorted(by_provider[provider]):
             entry = by_provider[provider][model]
-            lines.append(f'[{provider}."{model}"]')
+            lines.append(f"[{_toml_key(provider)}.{_toml_quoted(model)}]")
             for key in (
                 "input_cents_per_m",
                 "output_cents_per_m",
@@ -275,6 +295,25 @@ def _litellm_to_toml(data: Any) -> str:
             lines.append("")
 
     return "\n".join(lines)
+
+
+def _toml_key(key: str) -> str:
+    """Emit ``key`` bare when TOML allows it, quoted otherwise.
+
+    Upstream provider names are not under our control; one with a space
+    or a dot would otherwise produce an unloadable file.
+    """
+    return key if _TOML_BARE_KEY.fullmatch(key) else _toml_quoted(key)
+
+
+def _toml_quoted(key: str) -> str:
+    """Emit ``key`` as a TOML basic string.
+
+    JSON's string escapes are a subset of TOML's basic-string escapes,
+    so ``json.dumps`` is a valid encoder for quotes, backslashes, and
+    control characters alike.
+    """
+    return json.dumps(key)
 
 
 def _to_cpm(dollars_per_token: object) -> str:
