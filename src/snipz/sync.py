@@ -29,7 +29,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Self
+from typing import Any, Self, TypeVar
 from uuid import UUID
 
 from snipz import core as _async
@@ -43,6 +43,8 @@ __all__ = [
     "Reservation",
     "Scope",
 ]
+
+_T = TypeVar("_T")
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +115,7 @@ def _in_running_loop() -> bool:
     return True
 
 
-def _run[T](coro: Coroutine[Any, Any, T]) -> T:
+def _run(coro: Coroutine[Any, Any, _T]) -> _T:
     """Dispatch a coroutine onto the background loop and block until done.
 
     Raises :class:`RuntimeError` if called from inside an active event

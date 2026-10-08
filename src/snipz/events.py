@@ -29,7 +29,7 @@ from __future__ import annotations
 import inspect
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias
 
 if TYPE_CHECKING:
     from snipz.core import Reservation
@@ -37,8 +37,8 @@ if TYPE_CHECKING:
 __all__ = ["EventDispatcher", "EventName", "Handler"]
 
 
-type EventName = Literal["reserved", "committed", "released", "overrun"]
-type Handler = Callable[["Reservation"], Any]
+EventName: TypeAlias = Literal["reserved", "committed", "released", "overrun"]
+Handler: TypeAlias = Callable[["Reservation"], Any]
 
 
 _LOGGER: Final = logging.getLogger("snipz.events")
