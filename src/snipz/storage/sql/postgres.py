@@ -151,11 +151,13 @@ SCHEMA_VERSION_MAX: Final = "SELECT MAX(version) FROM snipz_schema_version"
 LATEST_PRICING: Final = """
     SELECT provider, model,
            input_cents_per_m, output_cents_per_m,
-           cache_read_cents_per_m, cache_write_cents_per_m
+           cache_read_cents_per_m, cache_write_cents_per_m,
+           cache_write_1h_cents_per_m, tiers
       FROM (
           SELECT provider, model,
                  input_cents_per_m, output_cents_per_m,
                  cache_read_cents_per_m, cache_write_cents_per_m,
+                 cache_write_1h_cents_per_m, tiers,
                  ROW_NUMBER() OVER (
                      PARTITION BY provider, model ORDER BY valid_from DESC
                  ) AS rn

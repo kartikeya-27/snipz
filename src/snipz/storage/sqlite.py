@@ -330,6 +330,8 @@ def _row_to_pricing(row: Sequence[object]) -> PricingRow:
         output_cents_per_m=Decimal(str(row[3])),
         cache_read_cents_per_m=Decimal(str(row[4])) if row[4] is not None else None,
         cache_write_cents_per_m=Decimal(str(row[5])) if row[5] is not None else None,
+        cache_write_1h_cents_per_m=Decimal(str(row[6])) if row[6] is not None else None,
+        tiers_json=str(row[7]) if row[7] is not None else None,
     )
 
 

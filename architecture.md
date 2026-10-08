@@ -289,7 +289,9 @@ CREATE TABLE snipz_pricing (
     input_cents_per_m        NUMERIC(20, 6) NOT NULL,
     output_cents_per_m       NUMERIC(20, 6) NOT NULL,
     cache_read_cents_per_m   NUMERIC(20, 6),
-    cache_write_cents_per_m  NUMERIC(20, 6),
+    cache_write_cents_per_m  NUMERIC(20, 6),         -- 5-minute TTL
+    cache_write_1h_cents_per_m NUMERIC(20, 6),       -- 1-hour TTL (migration 0002)
+    tiers                    TEXT,                   -- JSON long-prompt tiers (migration 0002)
     valid_from               TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (provider, model, valid_from)
 );

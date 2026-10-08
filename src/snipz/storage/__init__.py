@@ -112,6 +112,10 @@ class PricingRow:
     output_cents_per_m: Decimal
     cache_read_cents_per_m: Decimal | None
     cache_write_cents_per_m: Decimal | None
+    cache_write_1h_cents_per_m: Decimal | None
+    # Long-prompt tiers as stored: a JSON array of tier objects, parsed
+    # and validated at the engine layer (``snipz.pricing``).
+    tiers_json: str | None
 
 
 # ---------------------------------------------------------------------------
