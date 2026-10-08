@@ -2,7 +2,7 @@
 
 **An LLM cost reservation ledger for Python.** Cap your spend per user, per tenant, per feature — and never overshoot, even under concurrent load.
 
-> **Status:** v0.2.x — pre-1.0. The engine is feature-complete; the [head-to-head benchmark](#head-to-head-correctness-benchmark) holds the cap on real Postgres at 1000 concurrent reservations while LiteLLM `BudgetManager` and Shekel overshoot by 20×. API may shift before v1.0; pin `snipz>=0.2,<0.3` to allow patches and forbid breaks.
+> **Status:** v0.3.x — pre-1.0. The engine is feature-complete; the [head-to-head benchmark](#head-to-head-correctness-benchmark) holds the cap on real Postgres at 1000 concurrent reservations while LiteLLM `BudgetManager` and Shekel overshoot by 20×. API may shift before v1.0; pin `snipz>=0.3,<0.4` to allow patches and forbid breaks.
 
 ```python
 async with await budget.reserve(Scope("user", "u_42"), Decimal("10")) as r:
