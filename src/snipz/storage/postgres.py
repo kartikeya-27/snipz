@@ -261,6 +261,8 @@ class PostgresLedgerConnection:
                 output_cents_per_m=record["output_cents_per_m"],
                 cache_read_cents_per_m=record["cache_read_cents_per_m"],
                 cache_write_cents_per_m=record["cache_write_cents_per_m"],
+                cache_write_1h_cents_per_m=record["cache_write_1h_cents_per_m"],
+                tiers_json=record["tiers"],
             )
             for record in records
         ]

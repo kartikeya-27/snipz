@@ -13,8 +13,9 @@ _Nothing yet._
 
 ## [0.3.0] — 2026-10-09
 
-The **compatibility and pricing release**: installs on Python 3.11+, and
-`Pricing.default()` prices current models again.
+The **compatibility and pricing release**: installs on Python 3.11+,
+`Pricing.default()` prices current models again, and long prompts and
+1-hour cache writes are no longer under-billed.
 
 ### Changed
 
@@ -53,8 +54,35 @@ The **compatibility and pricing release**: installs on Python 3.11+, and
   `cost(provider="mistral", model="codestral-latest")` never matched. The
   prefix is stripped on refresh; when upstream lists a model both ways, the
   unprefixed entry wins.
+- **Long prompts were under-billed.** Providers price some models by prompt
+  length — Claude Haiku 5.5 costs 5× over 100K tokens, GPT-5.x more over
+  272K, Gemini more over 200K — but `Pricing` only knew the base rate, so
+  reservations and commits for long prompts came in low and spend could
+  pass the cap. Long-prompt tiers are now part of the price model (see
+  Added); 325 vendored models carry them.
+- **1-hour cache writes were billed at the 5-minute rate** (Anthropic: 2×
+  vs 1.25× base input). `cost()` now takes `cache_write_1h_tokens` and bills
+  them at the 1-hour rate; 233 vendored models carry it.
 
 ### Added
+
+- **`PriceTier`** and `PriceEntry.tiers`: long-prompt rates that replace the
+  base rates when the prompt (input + cache-read + cache-write tokens) is
+  strictly over `above_tokens`. The highest matching tier wins; a rate the
+  tier leaves unset falls back to the base rate. In TOML:
+  `[[<provider>."<model>".tiers]]` tables with `above_tokens = N`.
+- **`PriceEntry.cache_write_1h_cents_per_m`** and the
+  `Pricing.cost(cache_write_1h_tokens=...)` argument. `cache_write_tokens`
+  keeps meaning the default 5-minute writes; pass each count once
+  (Anthropic's `usage.cache_creation_input_tokens` is their sum, broken
+  down in `usage.cache_creation`).
+- **Schema migration 0002** adds `cache_write_1h_cents_per_m` and `tiers`
+  (JSON text) to `snipz_pricing`, so database overrides can express both —
+  overriding a tiered model no longer has to drop its tiers. Run
+  `budget.migrate()` after upgrading; existing rows are kept.
+- `snipz update-pricing` translates LiteLLM's `*_above_<N>k_tokens` and
+  `*_above_1hr` fields. Service-tier variants (`_batches`, `_priority`,
+  `_flex`) are still not modelled — snipz bills standard-tier rates.
 
 - **PR CI workflow** (`.github/workflows/ci.yml`). Every pull request and
   push to `main` now runs the SQLite suite on Python 3.11, 3.12, 3.13, and

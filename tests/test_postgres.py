@@ -285,3 +285,57 @@ async def test_pg_injected_pool_is_not_closed_by_backend() -> None:
             await pool.close()
     finally:
         container.stop()
+
+
+# ---------------------------------------------------------------------------
+# Pricing overrides (migration 0002 columns)
+# ---------------------------------------------------------------------------
+
+
+async def test_pg_pricing_override_round_trips_1h_rate_and_tiers() -> None:
+    """``snipz_pricing.cache_write_1h_cents_per_m`` and ``.tiers`` (migration
+    0002) load through ``Pricing.with_backend`` on Postgres, and re-running
+    ``migrate()`` is a no-op."""
+    import asyncpg
+    from testcontainers.postgres import PostgresContainer
+
+    from snipz import PriceTier, Pricing
+    from snipz.storage.postgres import PostgresBackend
+
+    container = PostgresContainer("postgres:16-alpine")
+    container.start()
+    try:
+        host = container.get_container_host_ip()
+        port = container.get_exposed_port(5432)
+        dsn = (
+            f"postgresql://{container.username}:{container.password}"
+            f"@{host}:{port}/{container.dbname}"
+        )
+
+        backend = PostgresBackend(dsn)
+        try:
+            await backend.migrate()
+            await backend.migrate()
+
+            conn = await asyncpg.connect(dsn)
+            try:
+                assert await conn.fetchval("SELECT MAX(version) FROM snipz_schema_version") == 2
+                await conn.execute(
+                    "INSERT INTO snipz_pricing (provider, model, input_cents_per_m, "
+                    "output_cents_per_m, cache_write_1h_cents_per_m, tiers) "
+                    "VALUES ('custom', 'tiered', 10, 50, 20, $1)",
+                    '[{"above_tokens": 100000, "input_cents_per_m": "50"}]',
+                )
+            finally:
+                await conn.close()
+
+            entry = (await Pricing.with_backend(backend)).get("custom", "tiered")
+            assert entry is not None
+            assert entry.cache_write_1h_cents_per_m == Decimal("20")
+            assert entry.tiers == (
+                PriceTier(above_tokens=100_000, input_cents_per_m=Decimal("50")),
+            )
+        finally:
+            await backend.close()
+    finally:
+        container.stop()

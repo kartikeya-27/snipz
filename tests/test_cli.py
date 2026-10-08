@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from snipz import Pricing
+from snipz import PriceTier, Pricing
 from snipz.cli import _litellm_to_toml, _to_cpm, main
 
 # ---------------------------------------------------------------------------
@@ -201,6 +201,63 @@ def test_translator_strips_provider_routing_prefix(unprefixed_first: bool) -> No
     assert gemini is not None
     assert gemini.input_cents_per_m == Decimal("100")
     assert pricing.get("gemini", "gemini/gemini-x") is None
+
+
+def test_translator_emits_long_prompt_tiers_and_1h_cache_write() -> None:
+    """LiteLLM's ``*_above_<N>k_tokens`` and ``*_above_1hr`` fields — the
+    shape of its Claude Haiku 5.5 entry — survive into the TOML."""
+    data = {
+        "claude-haiku-5-5": {
+            "litellm_provider": "anthropic",
+            "input_cost_per_token": 1e-7,
+            "output_cost_per_token": 5e-7,
+            "cache_read_input_token_cost": 1e-8,
+            "cache_creation_input_token_cost": 1.25e-7,
+            "cache_creation_input_token_cost_above_1hr": 2e-7,
+            "input_cost_per_token_above_100k_tokens": 5e-7,
+            "output_cost_per_token_above_100k_tokens": 0.0000025,
+            "cache_read_input_token_cost_above_100k_tokens": 5e-8,
+            "cache_creation_input_token_cost_above_100k_tokens": 6.25e-7,
+            "cache_creation_input_token_cost_above_1hr_above_100k_tokens": 0.000001,
+            # Service-tier variants are not translated.
+            "input_cost_per_token_batches": 5e-8,
+            "input_cost_per_token_above_100k_tokens_batches": 2.5e-7,
+        },
+    }
+    entry = Pricing.from_toml(_litellm_to_toml(data)).get("anthropic", "claude-haiku-5-5")
+
+    assert entry is not None
+    assert entry.input_cents_per_m == Decimal("10")
+    assert entry.cache_write_1h_cents_per_m == Decimal("20")
+    assert entry.tiers == (
+        PriceTier(
+            above_tokens=100_000,
+            input_cents_per_m=Decimal("50"),
+            output_cents_per_m=Decimal("250"),
+            cache_read_cents_per_m=Decimal("5"),
+            cache_write_cents_per_m=Decimal("62.5"),
+            cache_write_1h_cents_per_m=Decimal("100"),
+        ),
+    )
+
+
+def test_translator_emits_multiple_tiers_in_threshold_order() -> None:
+    data = {
+        "m": {
+            "litellm_provider": "openai",
+            "input_cost_per_token": 0.000001,
+            "output_cost_per_token": 0.000002,
+            "input_cost_per_token_above_272k_tokens": 0.000003,
+            "input_cost_per_token_above_128k_tokens": 0.0000015,
+        },
+    }
+    entry = Pricing.from_toml(_litellm_to_toml(data)).get("openai", "m")
+
+    assert entry is not None
+    assert [(t.above_tokens, t.input_cents_per_m) for t in entry.tiers] == [
+        (128_000, Decimal("150")),
+        (272_000, Decimal("300")),
+    ]
 
 
 # ---------------------------------------------------------------------------

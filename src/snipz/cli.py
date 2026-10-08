@@ -235,8 +235,13 @@ def _litellm_to_toml(data: Any) -> str:
     (``mistral/codestral-latest``); the ``<provider>/`` prefix is
     stripped so lookups use the provider's own model id. When upstream
     lists the same model both ways, the unprefixed entry wins.
+
+    Long-prompt rates (``<field>_above_<N>k_tokens``) become
+    ``[[...tiers]]`` tables and the 1-hour cache-write rate becomes
+    ``cache_write_1h_cents_per_m``. Service-tier variants
+    (``_batches``, ``_priority``, ``_flex``) are not translated.
     """
-    by_provider: dict[str, dict[str, dict[str, str]]] = {}
+    by_provider: dict[str, dict[str, _TomlEntry]] = {}
 
     if not isinstance(data, dict):
         data = {}
@@ -245,23 +250,11 @@ def _litellm_to_toml(data: Any) -> str:
         if model_name in _LITELLM_PLACEHOLDER_KEYS or not isinstance(entry, dict):
             continue
         provider = entry.get("litellm_provider")
-        input_per_token = entry.get("input_cost_per_token")
-        output_per_token = entry.get("output_cost_per_token")
         if not isinstance(provider, str):
             continue
-        if input_per_token is None or output_per_token is None:
+        rates = _litellm_rates(entry, suffix="")
+        if "input_cents_per_m" not in rates or "output_cents_per_m" not in rates:
             continue
-
-        toml_entry: dict[str, str] = {
-            "input_cents_per_m": _to_cpm(input_per_token),
-            "output_cents_per_m": _to_cpm(output_per_token),
-        }
-        cache_read = entry.get("cache_read_input_token_cost")
-        if cache_read is not None:
-            toml_entry["cache_read_cents_per_m"] = _to_cpm(cache_read)
-        cache_write = entry.get("cache_creation_input_token_cost")
-        if cache_write is not None:
-            toml_entry["cache_write_cents_per_m"] = _to_cpm(cache_write)
 
         models = by_provider.setdefault(provider, {})
         prefix = f"{provider}/"
@@ -269,7 +262,7 @@ def _litellm_to_toml(data: Any) -> str:
             model_name = model_name.removeprefix(prefix)
             if model_name in models:
                 continue
-        models[model_name] = toml_entry
+        models[model_name] = (rates, _litellm_tiers(entry))
 
     lines: list[str] = [
         "# Snipz pricing — regenerated from LiteLLM upstream.",
@@ -282,19 +275,70 @@ def _litellm_to_toml(data: Any) -> str:
         lines.append(f"# {'-' * 73}")
         lines.append("")
         for model in sorted(by_provider[provider]):
-            entry = by_provider[provider][model]
-            lines.append(f"[{_toml_key(provider)}.{_toml_quoted(model)}]")
-            for key in (
-                "input_cents_per_m",
-                "output_cents_per_m",
-                "cache_read_cents_per_m",
-                "cache_write_cents_per_m",
-            ):
-                if key in entry:
-                    lines.append(f'{key} = "{entry[key]}"')
+            rates, tiers = by_provider[provider][model]
+            table = f"{_toml_key(provider)}.{_toml_quoted(model)}"
+            lines.append(f"[{table}]")
+            lines.extend(_rate_lines(rates))
             lines.append("")
+            for above_tokens, tier_rates in tiers:
+                lines.append(f"[[{table}.tiers]]")
+                lines.append(f"above_tokens = {above_tokens}")
+                lines.extend(_rate_lines(tier_rates))
+                lines.append("")
 
     return "\n".join(lines)
+
+
+# One translated model: base rates plus ``(above_tokens, rates)`` tiers.
+_TomlEntry = tuple[dict[str, str], list[tuple[int, dict[str, str]]]]
+
+# LiteLLM per-token cost field -> snipz per-million cents field, in the
+# order fields are written to the TOML.
+_LITELLM_RATE_FIELDS: tuple[tuple[str, str], ...] = (
+    ("input_cost_per_token", "input_cents_per_m"),
+    ("output_cost_per_token", "output_cents_per_m"),
+    ("cache_read_input_token_cost", "cache_read_cents_per_m"),
+    ("cache_creation_input_token_cost", "cache_write_cents_per_m"),
+    ("cache_creation_input_token_cost_above_1hr", "cache_write_1h_cents_per_m"),
+)
+
+# ``input_cost_per_token_above_200k_tokens`` etc. Anchored at ``$`` so
+# service-tier variants (``..._above_200k_tokens_batches``) never match.
+_LITELLM_TIER_KEY = re.compile(r"(?P<field>.+)_above_(?P<thousands>\d+)k_tokens")
+
+
+def _litellm_rates(entry: dict[str, Any], *, suffix: str) -> dict[str, str]:
+    """Collect the rates present in ``entry`` for one tier suffix."""
+    rates: dict[str, str] = {}
+    for litellm_key, snipz_key in _LITELLM_RATE_FIELDS:
+        value = entry.get(litellm_key + suffix)
+        if value is not None:
+            rates[snipz_key] = _to_cpm(value)
+    return rates
+
+
+def _litellm_tiers(entry: dict[str, Any]) -> list[tuple[int, dict[str, str]]]:
+    """Long-prompt tiers in ``entry``, sorted by threshold."""
+    known_fields = {litellm_key for litellm_key, _ in _LITELLM_RATE_FIELDS}
+    thresholds: set[int] = set()
+    for key in entry:
+        match = _LITELLM_TIER_KEY.fullmatch(key)
+        if match and match["field"] in known_fields:
+            thresholds.add(int(match["thousands"]))
+    tiers = []
+    for thousands in sorted(thresholds):
+        rates = _litellm_rates(entry, suffix=f"_above_{thousands}k_tokens")
+        if rates:
+            tiers.append((thousands * 1000, rates))
+    return tiers
+
+
+def _rate_lines(rates: dict[str, str]) -> list[str]:
+    return [
+        f'{snipz_key} = "{rates[snipz_key]}"'
+        for _, snipz_key in _LITELLM_RATE_FIELDS
+        if snipz_key in rates
+    ]
 
 
 def _toml_key(key: str) -> str:

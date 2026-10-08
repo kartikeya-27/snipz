@@ -444,132 +444,178 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [anthropic."claude-fable-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [anthropic."claude-haiku-4-5"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [anthropic."claude-haiku-4-5-20251001"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [anthropic."claude-haiku-5-5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[anthropic."claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [anthropic."claude-mythos-5"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [anthropic."claude-mythos-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [anthropic."claude-mythos-preview"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [anthropic."claude-opus-4-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-5-20251101"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-6"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-6-20260205"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-7-20260416"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-4-8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [anthropic."claude-opus-5-5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [anthropic."claude-sonnet-4-5"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[anthropic."claude-sonnet-4-5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [anthropic."claude-sonnet-4-5-20250929"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[anthropic."claude-sonnet-4-5-20250929".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [anthropic."claude-sonnet-4-6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [anthropic."claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [anthropic."claude-sonnet-5-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 # -------------------------------------------------------------------------
 # anyscale
@@ -636,6 +682,13 @@ input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+
+[[azure."apac/gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "480"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "24"
+cache_write_cents_per_m = "600"
 
 [azure."chat-latest"]
 input_cents_per_m = "500"
@@ -812,10 +865,22 @@ input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
 
+[[azure."eu/gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
+
 [azure."eu/gpt-5.4-2026-03-05"]
 input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
+
+[[azure."eu/gpt-5.4-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
 
 [azure."eu/gpt-5.4-mini"]
 input_cents_per_m = "82.5"
@@ -831,20 +896,43 @@ cache_read_cents_per_m = "2.2"
 input_cents_per_m = "3300"
 output_cents_per_m = "19800"
 
+[[azure."eu/gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6600"
+output_cents_per_m = "29700"
+
 [azure."eu/gpt-5.5"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[azure."eu/gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [azure."eu/gpt-5.5-2026-04-23"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
 
+[[azure."eu/gpt-5.5-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
+
 [azure."eu/gpt-5.5-2026-04-24"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[azure."eu/gpt-5.5-2026-04-24".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [azure."eu/gpt-5.6"]
 input_cents_per_m = "440"
@@ -852,11 +940,25 @@ output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
 
+[[azure."eu/gpt-5.6".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
+
 [azure."eu/gpt-5.6-luna"]
 input_cents_per_m = "22"
 output_cents_per_m = "132"
 cache_read_cents_per_m = "2.2"
 cache_write_cents_per_m = "27.5"
+
+[[azure."eu/gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "44"
+output_cents_per_m = "198"
+cache_read_cents_per_m = "4.4"
+cache_write_cents_per_m = "55"
 
 [azure."eu/gpt-5.6-sol"]
 input_cents_per_m = "440"
@@ -864,11 +966,25 @@ output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
 
+[[azure."eu/gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
+
 [azure."eu/gpt-5.6-terra"]
 input_cents_per_m = "220"
 output_cents_per_m = "1320"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+
+[[azure."eu/gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1980"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
 
 [azure."eu/gpt-6-astra"]
 input_cents_per_m = "1200"
@@ -876,11 +992,25 @@ output_cents_per_m = "6000"
 cache_read_cents_per_m = "120"
 cache_write_cents_per_m = "1500"
 
+[[azure."eu/gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2400"
+output_cents_per_m = "9000"
+cache_read_cents_per_m = "240"
+cache_write_cents_per_m = "3000"
+
 [azure."eu/gpt-6-luna"]
 input_cents_per_m = "12"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1.2"
 cache_write_cents_per_m = "15"
+
+[[azure."eu/gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "24"
+output_cents_per_m = "90"
+cache_read_cents_per_m = "2.4"
+cache_write_cents_per_m = "30"
 
 [azure."eu/gpt-6-sol"]
 input_cents_per_m = "240"
@@ -888,11 +1018,25 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "300"
 
+[[azure."eu/gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "480"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "48"
+cache_write_cents_per_m = "600"
+
 [azure."eu/gpt-6.1-sol"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+
+[[azure."eu/gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "480"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "24"
+cache_write_cents_per_m = "600"
 
 [azure."eu/o1-2024-12-17"]
 input_cents_per_m = "1650"
@@ -1255,10 +1399,22 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[azure."gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
+
 [azure."gpt-5.4-2026-03-05"]
 input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
+
+[[azure."gpt-5.4-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
 
 [azure."gpt-5.4-mini"]
 input_cents_per_m = "75"
@@ -1285,35 +1441,77 @@ input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
 
+[[azure."gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
+
 [azure."gpt-5.4-pro-2026-03-05"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
+
+[[azure."gpt-5.4-pro-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
 
 [azure."gpt-5.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[azure."gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [azure."gpt-5.5-2026-04-23"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
+
+[[azure."gpt-5.5-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
 
 [azure."gpt-5.5-2026-04-24"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[azure."gpt-5.5-2026-04-24".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [azure."gpt-5.5-pro"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
 
+[[azure."gpt-5.5-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
+
 [azure."gpt-5.5-pro-2026-04-23"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
+
+[[azure."gpt-5.5-pro-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
 
 [azure."gpt-5.6"]
 input_cents_per_m = "400"
@@ -1321,11 +1519,25 @@ output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
 
+[[azure."gpt-5.6".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
+
 [azure."gpt-5.6-luna"]
 input_cents_per_m = "20"
 output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
+
+[[azure."gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
 
 [azure."gpt-5.6-luna-2026-07-09"]
 input_cents_per_m = "20"
@@ -1333,11 +1545,25 @@ output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
 
+[[azure."gpt-5.6-luna-2026-07-09".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
+
 [azure."gpt-5.6-sol"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
+
+[[azure."gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
 
 [azure."gpt-5.6-sol-2026-07-09"]
 input_cents_per_m = "400"
@@ -1345,11 +1571,25 @@ output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
 
+[[azure."gpt-5.6-sol-2026-07-09".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
+
 [azure."gpt-5.6-terra"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+
+[[azure."gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
 
 [azure."gpt-5.6-terra-2026-07-09"]
 input_cents_per_m = "200"
@@ -1357,11 +1597,25 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[azure."gpt-5.6-terra-2026-07-09".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [azure."gpt-6-astra"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+
+[[azure."gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
 
 [azure."gpt-6-astra-2026-09-03"]
 input_cents_per_m = "1000"
@@ -1369,11 +1623,25 @@ output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
 
+[[azure."gpt-6-astra-2026-09-03".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
+
 [azure."gpt-6-luna"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+
+[[azure."gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
 
 [azure."gpt-6-luna-2026-09-22"]
 input_cents_per_m = "10"
@@ -1381,11 +1649,25 @@ output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
 
+[[azure."gpt-6-luna-2026-09-22".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
+
 [azure."gpt-6-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+
+[[azure."gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
 
 [azure."gpt-6-sol-2026-09-22"]
 input_cents_per_m = "200"
@@ -1393,17 +1675,38 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[azure."gpt-6-sol-2026-09-22".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [azure."gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
 
+[[azure."gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
+
 [azure."gpt-6.1-sol-2026-09-29"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[azure."gpt-6.1-sol-2026-09-29".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [azure."gpt-audio"]
 input_cents_per_m = "250"
@@ -1766,10 +2069,22 @@ input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
 
+[[azure."us/gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
+
 [azure."us/gpt-5.4-2026-03-05"]
 input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
+
+[[azure."us/gpt-5.4-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
 
 [azure."us/gpt-5.4-mini"]
 input_cents_per_m = "82.5"
@@ -1785,20 +2100,43 @@ cache_read_cents_per_m = "2.2"
 input_cents_per_m = "3300"
 output_cents_per_m = "19800"
 
+[[azure."us/gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6600"
+output_cents_per_m = "29700"
+
 [azure."us/gpt-5.5"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[azure."us/gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [azure."us/gpt-5.5-2026-04-23"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
 
+[[azure."us/gpt-5.5-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
+
 [azure."us/gpt-5.5-2026-04-24"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[azure."us/gpt-5.5-2026-04-24".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [azure."us/gpt-5.6"]
 input_cents_per_m = "440"
@@ -1806,11 +2144,25 @@ output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
 
+[[azure."us/gpt-5.6".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
+
 [azure."us/gpt-5.6-luna"]
 input_cents_per_m = "22"
 output_cents_per_m = "132"
 cache_read_cents_per_m = "2.2"
 cache_write_cents_per_m = "27.5"
+
+[[azure."us/gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "44"
+output_cents_per_m = "198"
+cache_read_cents_per_m = "4.4"
+cache_write_cents_per_m = "55"
 
 [azure."us/gpt-5.6-sol"]
 input_cents_per_m = "440"
@@ -1818,11 +2170,25 @@ output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
 
+[[azure."us/gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
+
 [azure."us/gpt-5.6-terra"]
 input_cents_per_m = "220"
 output_cents_per_m = "1320"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+
+[[azure."us/gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1980"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
 
 [azure."us/gpt-6-astra"]
 input_cents_per_m = "1100"
@@ -1830,11 +2196,25 @@ output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
 
+[[azure."us/gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2200"
+output_cents_per_m = "8250"
+cache_read_cents_per_m = "220"
+cache_write_cents_per_m = "2750"
+
 [azure."us/gpt-6-luna"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+
+[[azure."us/gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "22"
+output_cents_per_m = "82.5"
+cache_read_cents_per_m = "2.2"
+cache_write_cents_per_m = "27.5"
 
 [azure."us/gpt-6-sol"]
 input_cents_per_m = "220"
@@ -1842,11 +2222,25 @@ output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
 
+[[azure."us/gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
+
 [azure."us/gpt-6.1-sol"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+
+[[azure."us/gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "22"
+cache_write_cents_per_m = "550"
 
 [azure."us/gpt-chat-latest"]
 input_cents_per_m = "550"
@@ -2113,84 +2507,106 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [azure_ai."claude-fable-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [azure_ai."claude-haiku-4-5"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [azure_ai."claude-haiku-5-5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[azure_ai."claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [azure_ai."claude-opus-4-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [azure_ai."claude-opus-4-6"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [azure_ai."claude-opus-4-7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [azure_ai."claude-opus-4-8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [azure_ai."claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [azure_ai."claude-opus-5-5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [azure_ai."claude-sonnet-4-5"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [azure_ai."claude-sonnet-4-6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [azure_ai."claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [azure_ai."claude-sonnet-5-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [azure_ai."codex-mini"]
 input_cents_per_m = "150"
@@ -2265,10 +2681,22 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[azure_ai."gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
+
 [azure_ai."gpt-5.4-2026-03-05"]
 input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
+
+[[azure_ai."gpt-5.4-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
 
 [azure_ai."gpt-5.4-mini"]
 input_cents_per_m = "75"
@@ -2295,25 +2723,55 @@ input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
 
+[[azure_ai."gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
+
 [azure_ai."gpt-5.4-pro-2026-03-05"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 cache_read_cents_per_m = "300"
+
+[[azure_ai."gpt-5.4-pro-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+cache_read_cents_per_m = "600"
 
 [azure_ai."gpt-5.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[azure_ai."gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [azure_ai."gpt-5.5-2026-04-23"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[azure_ai."gpt-5.5-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [azure_ai."gpt-5.5-2026-04-24"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
+
+[[azure_ai."gpt-5.5-2026-04-24".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
 
 [azure_ai."gpt-6-astra"]
 input_cents_per_m = "1000"
@@ -2321,11 +2779,25 @@ output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
 
+[[azure_ai."gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
+
 [azure_ai."gpt-6-luna"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+
+[[azure_ai."gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
 
 [azure_ai."gpt-6-sol"]
 input_cents_per_m = "200"
@@ -2333,11 +2805,25 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[azure_ai."gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [azure_ai."gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[azure_ai."gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [azure_ai."gpt-chat-latest"]
 input_cents_per_m = "500"
@@ -2391,15 +2877,33 @@ input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[azure_ai."grok-4.3".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [azure_ai."grok-4.6"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
 
+[[azure_ai."grok-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
+
 [azure_ai."grok-4.7"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[azure_ai."grok-4.7".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 [azure_ai."grok-code-fast-1"]
 input_cents_per_m = "20"
@@ -2706,11 +3210,25 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock."anthropic.claude-3-5-sonnet-20240620-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock."anthropic.claude-3-5-sonnet-20241022-v2:0"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+
+[[bedrock."anthropic.claude-3-5-sonnet-20241022-v2:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
 
 [bedrock."anthropic.claude-3-7-sonnet-20240620-v1:0"]
 input_cents_per_m = "360"
@@ -2733,6 +3251,7 @@ input_cents_per_m = "2750"
 output_cents_per_m = "13750"
 cache_read_cents_per_m = "275"
 cache_write_cents_per_m = "3437.5"
+cache_write_1h_cents_per_m = "5500"
 
 [bedrock."anthropic.claude-v1"]
 input_cents_per_m = "800"
@@ -2859,6 +3378,15 @@ input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[bedrock."claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock."cohere.command-light-text-v14"]
 input_cents_per_m = "30"
@@ -3270,60 +3798,78 @@ input_cents_per_m = "1200"
 output_cents_per_m = "6000"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "1500"
+cache_write_1h_cents_per_m = "2400"
 
 [bedrock."us-gov-east-1/anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "120"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "150"
+cache_write_1h_cents_per_m = "240"
 
 [bedrock."us-gov-east-1/anthropic.claude-haiku-5-5"]
 input_cents_per_m = "12"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1.2"
 cache_write_cents_per_m = "15"
+cache_write_1h_cents_per_m = "24"
+
+[[bedrock."us-gov-east-1/anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "60"
+output_cents_per_m = "300"
+cache_read_cents_per_m = "6"
+cache_write_cents_per_m = "75"
+cache_write_1h_cents_per_m = "120"
 
 [bedrock."us-gov-east-1/anthropic.claude-opus-4-8"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock."us-gov-east-1/anthropic.claude-opus-5"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock."us-gov-east-1/anthropic.claude-opus-5-5"]
 input_cents_per_m = "480"
 output_cents_per_m = "2400"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "600"
+cache_write_1h_cents_per_m = "960"
 
 [bedrock."us-gov-east-1/anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "360"
 output_cents_per_m = "1800"
 cache_read_cents_per_m = "36"
 cache_write_cents_per_m = "450"
+cache_write_1h_cents_per_m = "720"
 
 [bedrock."us-gov-east-1/anthropic.claude-sonnet-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock."us-gov-east-1/anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock."us-gov-east-1/claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "360"
 output_cents_per_m = "1800"
 cache_read_cents_per_m = "36"
 cache_write_cents_per_m = "450"
+cache_write_1h_cents_per_m = "720"
 
 [bedrock."us-gov-east-1/meta.llama3-70b-instruct-v1:0"]
 input_cents_per_m = "265"
@@ -3401,60 +3947,78 @@ input_cents_per_m = "1200"
 output_cents_per_m = "6000"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "1500"
+cache_write_1h_cents_per_m = "2400"
 
 [bedrock."us-gov-west-1/anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "120"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "150"
+cache_write_1h_cents_per_m = "240"
 
 [bedrock."us-gov-west-1/anthropic.claude-haiku-5-5"]
 input_cents_per_m = "12"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1.2"
 cache_write_cents_per_m = "15"
+cache_write_1h_cents_per_m = "24"
+
+[[bedrock."us-gov-west-1/anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "60"
+output_cents_per_m = "300"
+cache_read_cents_per_m = "6"
+cache_write_cents_per_m = "75"
+cache_write_1h_cents_per_m = "120"
 
 [bedrock."us-gov-west-1/anthropic.claude-opus-4-8"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock."us-gov-west-1/anthropic.claude-opus-5"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock."us-gov-west-1/anthropic.claude-opus-5-5"]
 input_cents_per_m = "480"
 output_cents_per_m = "2400"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "600"
+cache_write_1h_cents_per_m = "960"
 
 [bedrock."us-gov-west-1/anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "360"
 output_cents_per_m = "1800"
 cache_read_cents_per_m = "36"
 cache_write_cents_per_m = "450"
+cache_write_1h_cents_per_m = "720"
 
 [bedrock."us-gov-west-1/anthropic.claude-sonnet-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock."us-gov-west-1/anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock."us-gov-west-1/claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "360"
 output_cents_per_m = "1800"
 cache_read_cents_per_m = "36"
 cache_write_cents_per_m = "450"
+cache_write_1h_cents_per_m = "720"
 
 [bedrock."us-gov-west-1/meta.llama3-70b-instruct-v1:0"]
 input_cents_per_m = "265"
@@ -3644,36 +4208,50 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."anthropic.claude-fable-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [bedrock_converse."anthropic.claude-haiku-4-5@20251001"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [bedrock_converse."anthropic.claude-haiku-5-5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[bedrock_converse."anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [bedrock_converse."anthropic.claude-mythos-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."anthropic.claude-opus-4-1-20250805-v1:0"]
 input_cents_per_m = "1500"
@@ -3692,36 +4270,42 @@ input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."anthropic.claude-opus-4-6-v1"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."anthropic.claude-opus-4-7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."anthropic.claude-opus-4-8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."anthropic.claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."anthropic.claude-opus-5-5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [bedrock_converse."anthropic.claude-sonnet-4-20250514-v1:0"]
 input_cents_per_m = "300"
@@ -3729,29 +4313,48 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock_converse."anthropic.claude-sonnet-4-20250514-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock_converse."anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[bedrock_converse."anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock_converse."anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [bedrock_converse."anthropic.claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [bedrock_converse."anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [bedrock_converse."apac.amazon.nova-2-lite-v1:0"]
 input_cents_per_m = "33"
@@ -3783,6 +4386,7 @@ input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."apac.anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "110"
@@ -3795,36 +4399,50 @@ input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_converse."apac.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_converse."apac.anthropic.claude-mythos-preview"]
 input_cents_per_m = "2750"
 output_cents_per_m = "13750"
 cache_read_cents_per_m = "275"
 cache_write_cents_per_m = "3437.5"
+cache_write_1h_cents_per_m = "5500"
 
 [bedrock_converse."apac.anthropic.claude-opus-4-7"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."apac.anthropic.claude-opus-4-8"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."apac.anthropic.claude-opus-5"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."apac.anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_converse."apac.anthropic.claude-sonnet-4-20250514-v1:0"]
 input_cents_per_m = "300"
@@ -3832,101 +4450,140 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock_converse."apac.anthropic.claude-sonnet-4-20250514-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock_converse."apac.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
 
 [bedrock_converse."apac.anthropic.claude-sonnet-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."apac.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."au.anthropic.claude-fable-5"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."au.anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "110"
 output_cents_per_m = "550"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "137.5"
+cache_write_1h_cents_per_m = "220"
 
 [bedrock_converse."au.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_converse."au.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_converse."au.anthropic.claude-mythos-preview"]
 input_cents_per_m = "2750"
 output_cents_per_m = "13750"
 cache_read_cents_per_m = "275"
 cache_write_cents_per_m = "3437.5"
+cache_write_1h_cents_per_m = "5500"
 
 [bedrock_converse."au.anthropic.claude-opus-4-6-v1"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."au.anthropic.claude-opus-4-7"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."au.anthropic.claude-opus-4-8"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."au.anthropic.claude-opus-5"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."au.anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_converse."au.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
+
+[[bedrock_converse."au.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "660"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "66"
+cache_write_cents_per_m = "825"
+cache_write_1h_cents_per_m = "1320"
 
 [bedrock_converse."au.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
 
 [bedrock_converse."au.anthropic.claude-sonnet-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."au.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."deepseek.r1-v1:0"]
 input_cents_per_m = "135"
@@ -3970,24 +4627,36 @@ input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."eu.anthropic.claude-fable-5-1"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "27.5"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."eu.anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "110"
 output_cents_per_m = "550"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "137.5"
+cache_write_1h_cents_per_m = "220"
 
 [bedrock_converse."eu.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_converse."eu.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_converse."eu.anthropic.claude-opus-4-1-20250805-v1:0"]
 input_cents_per_m = "1500"
@@ -4006,36 +4675,42 @@ input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."eu.anthropic.claude-opus-4-6-v1"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."eu.anthropic.claude-opus-4-7"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."eu.anthropic.claude-opus-4-8"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."eu.anthropic.claude-opus-5"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."eu.anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_converse."eu.anthropic.claude-sonnet-4-20250514-v1:0"]
 input_cents_per_m = "300"
@@ -4043,29 +4718,48 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock_converse."eu.anthropic.claude-sonnet-4-20250514-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock_converse."eu.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
+
+[[bedrock_converse."eu.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "660"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "66"
+cache_write_cents_per_m = "825"
+cache_write_1h_cents_per_m = "1320"
 
 [bedrock_converse."eu.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
 
 [bedrock_converse."eu.anthropic.claude-sonnet-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."eu.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."eu.deepseek.v3.2"]
 input_cents_per_m = "74"
@@ -4085,66 +4779,85 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."global.anthropic.claude-fable-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."global.anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [bedrock_converse."global.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[bedrock_converse."global.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [bedrock_converse."global.anthropic.claude-mythos-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [bedrock_converse."global.anthropic.claude-opus-4-5-20251101-v1:0"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."global.anthropic.claude-opus-4-6-v1"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."global.anthropic.claude-opus-4-7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."global.anthropic.claude-opus-4-8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."global.anthropic.claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [bedrock_converse."global.anthropic.claude-opus-5-5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [bedrock_converse."global.anthropic.claude-sonnet-4-20250514-v1:0"]
 input_cents_per_m = "300"
@@ -4152,29 +4865,48 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock_converse."global.anthropic.claude-sonnet-4-20250514-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock_converse."global.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[bedrock_converse."global.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock_converse."global.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [bedrock_converse."global.anthropic.claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [bedrock_converse."global.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [bedrock_converse."global.moonshotai.kimi-k3"]
 input_cents_per_m = "300"
@@ -4187,10 +4919,22 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[bedrock_converse."global.openai.gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
+
 [bedrock_converse."global.openai.gpt-5.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
+
+[[bedrock_converse."global.openai.gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
 
 [bedrock_converse."global.openai.gpt-5.6-luna"]
 input_cents_per_m = "20"
@@ -4198,11 +4942,25 @@ output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
 
+[[bedrock_converse."global.openai.gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
+
 [bedrock_converse."global.openai.gpt-5.6-sol"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
+
+[[bedrock_converse."global.openai.gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
 
 [bedrock_converse."global.openai.gpt-5.6-terra"]
 input_cents_per_m = "200"
@@ -4210,11 +4968,25 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[bedrock_converse."global.openai.gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [bedrock_converse."global.openai.gpt-6-astra"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+
+[[bedrock_converse."global.openai.gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
 
 [bedrock_converse."global.openai.gpt-6-luna"]
 input_cents_per_m = "10"
@@ -4222,17 +4994,38 @@ output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
 
+[[bedrock_converse."global.openai.gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
+
 [bedrock_converse."global.openai.gpt-6-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[bedrock_converse."global.openai.gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [bedrock_converse."global.openai.gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[bedrock_converse."global.openai.gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [bedrock_converse."global.xai.grok-4.6"]
 input_cents_per_m = "200"
@@ -4273,60 +5066,86 @@ input_cents_per_m = "110"
 output_cents_per_m = "550"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "137.5"
+cache_write_1h_cents_per_m = "220"
 
 [bedrock_converse."jp.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_converse."jp.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_converse."jp.anthropic.claude-opus-4-7"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."jp.anthropic.claude-opus-4-8"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."jp.anthropic.claude-opus-5"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."jp.anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_converse."jp.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
+
+[[bedrock_converse."jp.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "660"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "66"
+cache_write_cents_per_m = "825"
+cache_write_1h_cents_per_m = "1320"
 
 [bedrock_converse."jp.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
 
 [bedrock_converse."jp.anthropic.claude-sonnet-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."jp.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."meta.llama3-3-70b-instruct-v1:0"]
 input_cents_per_m = "72"
@@ -4424,17 +5243,38 @@ output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
 
+[[bedrock_converse."openai.gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
+
 [bedrock_converse."openai.gpt-6-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[bedrock_converse."openai.gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [bedrock_converse."openai.gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[bedrock_converse."openai.gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [bedrock_converse."openai.gpt-oss-120b-1:0"]
 input_cents_per_m = "15"
@@ -4485,48 +5325,72 @@ input_cents_per_m = "1200"
 output_cents_per_m = "6000"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "1500"
+cache_write_1h_cents_per_m = "2400"
 
 [bedrock_converse."us-gov.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "12"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1.2"
 cache_write_cents_per_m = "15"
+cache_write_1h_cents_per_m = "24"
+
+[[bedrock_converse."us-gov.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "60"
+output_cents_per_m = "300"
+cache_read_cents_per_m = "6"
+cache_write_cents_per_m = "75"
+cache_write_1h_cents_per_m = "120"
 
 [bedrock_converse."us-gov.anthropic.claude-opus-4-8"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock_converse."us-gov.anthropic.claude-opus-5"]
 input_cents_per_m = "600"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "60"
 cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [bedrock_converse."us-gov.anthropic.claude-opus-5-5"]
 input_cents_per_m = "480"
 output_cents_per_m = "2400"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "600"
+cache_write_1h_cents_per_m = "960"
 
 [bedrock_converse."us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "360"
 output_cents_per_m = "1800"
 cache_read_cents_per_m = "36"
 cache_write_cents_per_m = "450"
+cache_write_1h_cents_per_m = "720"
+
+[[bedrock_converse."us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "720"
+output_cents_per_m = "2700"
+cache_read_cents_per_m = "72"
+cache_write_cents_per_m = "900"
+cache_write_1h_cents_per_m = "1440"
 
 [bedrock_converse."us-gov.anthropic.claude-sonnet-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock_converse."us-gov.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock_converse."us-gov.nvidia.nemotron-nano-12b-v2"]
 input_cents_per_m = "24"
@@ -4593,42 +5457,57 @@ input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."us.anthropic.claude-fable-5-1"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "27.5"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."us.anthropic.claude-haiku-4-5-20251001-v1:0"]
 input_cents_per_m = "110"
 output_cents_per_m = "550"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "137.5"
+cache_write_1h_cents_per_m = "220"
 
 [bedrock_converse."us.anthropic.claude-haiku-5-5"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_converse."us.anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_converse."us.anthropic.claude-mythos-5"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."us.anthropic.claude-mythos-5-1"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "27.5"
 cache_write_cents_per_m = "1375"
+cache_write_1h_cents_per_m = "2200"
 
 [bedrock_converse."us.anthropic.claude-mythos-preview"]
 input_cents_per_m = "2750"
 output_cents_per_m = "13750"
 cache_read_cents_per_m = "275"
 cache_write_cents_per_m = "3437.5"
+cache_write_1h_cents_per_m = "5500"
 
 [bedrock_converse."us.anthropic.claude-opus-4-1-20250805-v1:0"]
 input_cents_per_m = "1500"
@@ -4647,36 +5526,42 @@ input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."us.anthropic.claude-opus-4-6-v1"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."us.anthropic.claude-opus-4-7"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."us.anthropic.claude-opus-4-8"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."us.anthropic.claude-opus-5"]
 input_cents_per_m = "550"
 output_cents_per_m = "2750"
 cache_read_cents_per_m = "55"
 cache_write_cents_per_m = "687.5"
+cache_write_1h_cents_per_m = "1100"
 
 [bedrock_converse."us.anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_converse."us.anthropic.claude-sonnet-4-20250514-v1:0"]
 input_cents_per_m = "300"
@@ -4684,29 +5569,48 @@ output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
 
+[[bedrock_converse."us.anthropic.claude-sonnet-4-20250514-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+
 [bedrock_converse."us.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
+
+[[bedrock_converse."us.anthropic.claude-sonnet-4-5-20250929-v1:0".tiers]]
+above_tokens = 200000
+input_cents_per_m = "660"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "66"
+cache_write_cents_per_m = "825"
+cache_write_1h_cents_per_m = "1320"
 
 [bedrock_converse."us.anthropic.claude-sonnet-4-6"]
 input_cents_per_m = "330"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "33"
 cache_write_cents_per_m = "412.5"
+cache_write_1h_cents_per_m = "660"
 
 [bedrock_converse."us.anthropic.claude-sonnet-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."us.anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_converse."us.deepseek.r1-v1:0"]
 input_cents_per_m = "135"
@@ -4743,10 +5647,22 @@ input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
 
+[[bedrock_converse."us.openai.gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
+
 [bedrock_converse."us.openai.gpt-5.5"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[bedrock_converse."us.openai.gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [bedrock_converse."us.openai.gpt-5.6-luna"]
 input_cents_per_m = "22"
@@ -4754,11 +5670,25 @@ output_cents_per_m = "132"
 cache_read_cents_per_m = "2.2"
 cache_write_cents_per_m = "27.5"
 
+[[bedrock_converse."us.openai.gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "44"
+output_cents_per_m = "198"
+cache_read_cents_per_m = "4.4"
+cache_write_cents_per_m = "55"
+
 [bedrock_converse."us.openai.gpt-5.6-sol"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
+
+[[bedrock_converse."us.openai.gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
 
 [bedrock_converse."us.openai.gpt-5.6-terra"]
 input_cents_per_m = "220"
@@ -4766,11 +5696,25 @@ output_cents_per_m = "1320"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
 
+[[bedrock_converse."us.openai.gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1980"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
+
 [bedrock_converse."us.openai.gpt-6-astra"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+
+[[bedrock_converse."us.openai.gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2200"
+output_cents_per_m = "8250"
+cache_read_cents_per_m = "220"
+cache_write_cents_per_m = "2750"
 
 [bedrock_converse."us.openai.gpt-6-luna"]
 input_cents_per_m = "11"
@@ -4778,17 +5722,38 @@ output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
 
+[[bedrock_converse."us.openai.gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "22"
+output_cents_per_m = "82.5"
+cache_read_cents_per_m = "2.2"
+cache_write_cents_per_m = "27.5"
+
 [bedrock_converse."us.openai.gpt-6-sol"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
 
+[[bedrock_converse."us.openai.gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
+
 [bedrock_converse."us.openai.gpt-6.1-sol"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+
+[[bedrock_converse."us.openai.gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "22"
+cache_write_cents_per_m = "550"
 
 [bedrock_converse."us.writer.palmyra-x4-v1:0"]
 input_cents_per_m = "250"
@@ -4852,24 +5817,36 @@ input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [bedrock_mantle."anthropic.claude-haiku-5-5"]
 input_cents_per_m = "11"
 output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
+cache_write_1h_cents_per_m = "22"
+
+[[bedrock_mantle."anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "55"
+output_cents_per_m = "275"
+cache_read_cents_per_m = "5.5"
+cache_write_cents_per_m = "68.75"
+cache_write_1h_cents_per_m = "110"
 
 [bedrock_mantle."anthropic.claude-opus-5-5"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "550"
+cache_write_1h_cents_per_m = "880"
 
 [bedrock_mantle."anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
+cache_write_1h_cents_per_m = "440"
 
 [bedrock_mantle."deepseek.v3.1"]
 input_cents_per_m = "58"
@@ -4896,10 +5873,22 @@ input_cents_per_m = "275"
 output_cents_per_m = "1650"
 cache_read_cents_per_m = "27.5"
 
+[[bedrock_mantle."openai.gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "550"
+output_cents_per_m = "2475"
+cache_read_cents_per_m = "55"
+
 [bedrock_mantle."openai.gpt-5.5"]
 input_cents_per_m = "550"
 output_cents_per_m = "3300"
 cache_read_cents_per_m = "55"
+
+[[bedrock_mantle."openai.gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1100"
+output_cents_per_m = "4950"
+cache_read_cents_per_m = "110"
 
 [bedrock_mantle."openai.gpt-5.6-cyber"]
 input_cents_per_m = "1375"
@@ -4913,11 +5902,25 @@ output_cents_per_m = "132"
 cache_read_cents_per_m = "2.2"
 cache_write_cents_per_m = "27.5"
 
+[[bedrock_mantle."openai.gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "44"
+output_cents_per_m = "198"
+cache_read_cents_per_m = "4.4"
+cache_write_cents_per_m = "55"
+
 [bedrock_mantle."openai.gpt-5.6-sol"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
+
+[[bedrock_mantle."openai.gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
 
 [bedrock_mantle."openai.gpt-5.6-terra"]
 input_cents_per_m = "220"
@@ -4925,11 +5928,25 @@ output_cents_per_m = "1320"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
 
+[[bedrock_mantle."openai.gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1980"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
+
 [bedrock_mantle."openai.gpt-6-astra"]
 input_cents_per_m = "1100"
 output_cents_per_m = "5500"
 cache_read_cents_per_m = "110"
 cache_write_cents_per_m = "1375"
+
+[[bedrock_mantle."openai.gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2200"
+output_cents_per_m = "8250"
+cache_read_cents_per_m = "220"
+cache_write_cents_per_m = "2750"
 
 [bedrock_mantle."openai.gpt-6-luna"]
 input_cents_per_m = "11"
@@ -4937,11 +5954,25 @@ output_cents_per_m = "55"
 cache_read_cents_per_m = "1.1"
 cache_write_cents_per_m = "13.75"
 
+[[bedrock_mantle."openai.gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "22"
+output_cents_per_m = "82.5"
+cache_read_cents_per_m = "2.2"
+cache_write_cents_per_m = "27.5"
+
 [bedrock_mantle."openai.gpt-6-sol"]
 input_cents_per_m = "220"
 output_cents_per_m = "1100"
 cache_read_cents_per_m = "22"
 cache_write_cents_per_m = "275"
+
+[[bedrock_mantle."openai.gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "44"
+cache_write_cents_per_m = "550"
 
 [bedrock_mantle."openai.gpt-6.1-sol"]
 input_cents_per_m = "220"
@@ -4949,11 +5980,25 @@ output_cents_per_m = "1100"
 cache_read_cents_per_m = "11"
 cache_write_cents_per_m = "275"
 
+[[bedrock_mantle."openai.gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "440"
+output_cents_per_m = "1650"
+cache_read_cents_per_m = "22"
+cache_write_cents_per_m = "550"
+
 [bedrock_mantle."openai.gpt-daybreak-blue-5.6-sol"]
 input_cents_per_m = "440"
 output_cents_per_m = "2200"
 cache_read_cents_per_m = "44"
 cache_write_cents_per_m = "550"
+
+[[bedrock_mantle."openai.gpt-daybreak-blue-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "880"
+output_cents_per_m = "3300"
+cache_read_cents_per_m = "88"
+cache_write_cents_per_m = "1100"
 
 [bedrock_mantle."openai.gpt-oss-120b"]
 input_cents_per_m = "15"
@@ -5018,18 +6063,29 @@ input_cents_per_m = "12"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1.2"
 cache_write_cents_per_m = "15"
+cache_write_1h_cents_per_m = "24"
+
+[[bedrock_mantle."us-gov-west-1/anthropic.claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "60"
+output_cents_per_m = "300"
+cache_read_cents_per_m = "6"
+cache_write_cents_per_m = "75"
+cache_write_1h_cents_per_m = "120"
 
 [bedrock_mantle."us-gov-west-1/anthropic.claude-opus-5-5"]
 input_cents_per_m = "480"
 output_cents_per_m = "2400"
 cache_read_cents_per_m = "24"
 cache_write_cents_per_m = "600"
+cache_write_1h_cents_per_m = "960"
 
 [bedrock_mantle."us-gov-west-1/anthropic.claude-sonnet-5-5"]
 input_cents_per_m = "240"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "12"
 cache_write_cents_per_m = "300"
+cache_write_1h_cents_per_m = "480"
 
 [bedrock_mantle."us-gov-west-1/google.gemma-4-26b-a4b"]
 input_cents_per_m = "15.6"
@@ -5054,11 +6110,25 @@ output_cents_per_m = "162"
 cache_read_cents_per_m = "2.7"
 cache_write_cents_per_m = "33.75"
 
+[[bedrock_mantle."us-gov-west-1/openai.gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "54"
+output_cents_per_m = "243"
+cache_read_cents_per_m = "5.4"
+cache_write_cents_per_m = "67.5"
+
 [bedrock_mantle."us-gov-west-1/openai.gpt-5.6-terra"]
 input_cents_per_m = "270"
 output_cents_per_m = "1620"
 cache_read_cents_per_m = "27"
 cache_write_cents_per_m = "337.5"
+
+[[bedrock_mantle."us-gov-west-1/openai.gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "540"
+output_cents_per_m = "2430"
+cache_read_cents_per_m = "54"
+cache_write_cents_per_m = "675"
 
 [bedrock_mantle."us-gov-west-1/openai.gpt-oss-120b"]
 input_cents_per_m = "18"
@@ -5636,6 +6706,7 @@ input_cents_per_m = "400.001"
 output_cents_per_m = "1999.998"
 cache_read_cents_per_m = "19.999"
 cache_write_cents_per_m = "500.003"
+cache_write_1h_cents_per_m = "800.002"
 
 [databricks."databricks-claude-sonnet-4"]
 input_cents_per_m = "299.99900000000002"
@@ -8059,6 +9130,11 @@ output_cents_per_m = "0"
 input_cents_per_m = "125"
 output_cents_per_m = "1000"
 
+[[gemini."gemini-2.5-computer-use-preview-10-2025".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+
 [gemini."gemini-2.5-flash"]
 input_cents_per_m = "30"
 output_cents_per_m = "250"
@@ -8094,6 +9170,12 @@ output_cents_per_m = "1000"
 input_cents_per_m = "125"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
+
+[[gemini."gemini-2.5-pro".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
 
 [gemini."gemini-2.5-pro-preview-tts"]
 input_cents_per_m = "100"
@@ -8148,10 +9230,22 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[gemini."gemini-3.1-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [gemini."gemini-3.1-pro-preview-customtools"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[gemini."gemini-3.1-pro-preview-customtools".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
 
 [gemini."gemini-3.5-flash"]
 input_cents_per_m = "150"
@@ -8224,6 +9318,11 @@ output_cents_per_m = "0"
 input_cents_per_m = "0"
 output_cents_per_m = "0"
 
+[[gemini."gemini-exp-1114".tiers]]
+above_tokens = 128000
+input_cents_per_m = "0"
+output_cents_per_m = "0"
+
 [gemini."gemini-exp-1206"]
 input_cents_per_m = "30"
 output_cents_per_m = "250"
@@ -8268,6 +9367,12 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[gemini."gemini-pro-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [gemini."gemini-robotics-er-2-preview"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
@@ -8281,6 +9386,11 @@ output_cents_per_m = "500"
 input_cents_per_m = "0"
 output_cents_per_m = "0"
 
+[[gemini."gemma-3-27b-it".tiers]]
+above_tokens = 128000
+input_cents_per_m = "0"
+output_cents_per_m = "0"
+
 [gemini."gemma-4-26b-a4b-it"]
 input_cents_per_m = "0"
 output_cents_per_m = "0"
@@ -8290,6 +9400,11 @@ input_cents_per_m = "0"
 output_cents_per_m = "0"
 
 [gemini."learnlm-1.5-pro-experimental"]
+input_cents_per_m = "0"
+output_cents_per_m = "0"
+
+[[gemini."learnlm-1.5-pro-experimental".tiers]]
+above_tokens = 128000
 input_cents_per_m = "0"
 output_cents_per_m = "0"
 
@@ -8937,6 +10052,12 @@ cache_write_cents_per_m = "37.5"
 input_cents_per_m = "30"
 output_cents_per_m = "120"
 cache_read_cents_per_m = "6"
+
+[[minimax."MiniMax-M3".tiers]]
+above_tokens = 512000
+input_cents_per_m = "60"
+output_cents_per_m = "240"
+cache_read_cents_per_m = "12"
 
 # -------------------------------------------------------------------------
 # mistral
@@ -10502,11 +11623,25 @@ output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
 
+[[openai."daybreak-blue-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
+
 [openai."daybreak-red-latest"]
 input_cents_per_m = "1250"
 output_cents_per_m = "7500"
 cache_read_cents_per_m = "125"
 cache_write_cents_per_m = "1562.5"
+
+[[openai."daybreak-red-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2500"
+output_cents_per_m = "11250"
+cache_read_cents_per_m = "250"
+cache_write_cents_per_m = "3125"
 
 [openai."ft:gpt-3.5-turbo"]
 input_cents_per_m = "300"
@@ -10853,10 +11988,22 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[openai."gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
+
 [openai."gpt-5.4-2026-03-05"]
 input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
+
+[[openai."gpt-5.4-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
 
 [openai."gpt-5.4-mini"]
 input_cents_per_m = "75"
@@ -10882,19 +12029,41 @@ cache_read_cents_per_m = "2"
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 
+[[openai."gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+
 [openai."gpt-5.4-pro-2026-03-05"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
+
+[[openai."gpt-5.4-pro-2026-03-05".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
 
 [openai."gpt-5.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[openai."gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [openai."gpt-5.5-2026-04-23"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
+
+[[openai."gpt-5.5-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
 
 [openai."gpt-5.5-cyber"]
 input_cents_per_m = "1250"
@@ -10905,9 +12074,19 @@ cache_read_cents_per_m = "125"
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 
+[[openai."gpt-5.5-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+
 [openai."gpt-5.5-pro-2026-04-23"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
+
+[[openai."gpt-5.5-pro-2026-04-23".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
 
 [openai."gpt-5.6"]
 input_cents_per_m = "400"
@@ -10915,11 +12094,25 @@ output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
 
+[[openai."gpt-5.6".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
+
 [openai."gpt-5.6-cyber"]
 input_cents_per_m = "1250"
 output_cents_per_m = "7500"
 cache_read_cents_per_m = "125"
 cache_write_cents_per_m = "1562.5"
+
+[[openai."gpt-5.6-cyber".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2500"
+output_cents_per_m = "11250"
+cache_read_cents_per_m = "250"
+cache_write_cents_per_m = "3125"
 
 [openai."gpt-5.6-luna"]
 input_cents_per_m = "20"
@@ -10927,11 +12120,25 @@ output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
 
+[[openai."gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
+
 [openai."gpt-5.6-sol"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
+
+[[openai."gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
 
 [openai."gpt-5.6-terra"]
 input_cents_per_m = "200"
@@ -10939,11 +12146,25 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openai."gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openai."gpt-6-astra"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+
+[[openai."gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
 
 [openai."gpt-6-luna"]
 input_cents_per_m = "10"
@@ -10951,17 +12172,38 @@ output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
 
+[[openai."gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
+
 [openai."gpt-6-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openai."gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openai."gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[openai."gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [openai."gpt-audio"]
 input_cents_per_m = "250"
@@ -10989,11 +12231,25 @@ output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 cache_write_cents_per_m = "500"
 
+[[openai."gpt-daybreak-blue-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+cache_write_cents_per_m = "1000"
+
 [openai."gpt-daybreak-red-latest"]
 input_cents_per_m = "1250"
 output_cents_per_m = "7500"
 cache_read_cents_per_m = "125"
 cache_write_cents_per_m = "1562.5"
+
+[[openai."gpt-daybreak-red-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2500"
+output_cents_per_m = "11250"
+cache_read_cents_per_m = "250"
+cache_write_cents_per_m = "3125"
 
 [openai."gpt-image-1.5"]
 input_cents_per_m = "500"
@@ -11203,6 +12459,7 @@ input_cents_per_m = "25"
 output_cents_per_m = "125"
 cache_read_cents_per_m = "3"
 cache_write_cents_per_m = "30"
+cache_write_1h_cents_per_m = "50"
 
 [openrouter."anthropic/claude-3.5-sonnet"]
 input_cents_per_m = "300"
@@ -11217,180 +12474,246 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [openrouter."anthropic/claude-fable-5.1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [openrouter."anthropic/claude-fable-5.1:batch"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "12.5"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-fable-5:batch"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-haiku-4.5"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [openrouter."anthropic/claude-haiku-4.5:batch"]
 input_cents_per_m = "50"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "5"
 cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [openrouter."anthropic/claude-haiku-5.5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[openrouter."anthropic/claude-haiku-5.5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [openrouter."anthropic/claude-opus-4.1"]
 input_cents_per_m = "1500"
 output_cents_per_m = "7500"
 cache_read_cents_per_m = "150"
 cache_write_cents_per_m = "1875"
+cache_write_1h_cents_per_m = "3000"
 
 [openrouter."anthropic/claude-opus-4.1:batch"]
 input_cents_per_m = "750"
 output_cents_per_m = "3750"
 cache_read_cents_per_m = "75"
 cache_write_cents_per_m = "937.5"
+cache_write_1h_cents_per_m = "1500"
 
 [openrouter."anthropic/claude-opus-4.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-opus-4.5:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1250"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "312.5"
+cache_write_1h_cents_per_m = "500"
 
 [openrouter."anthropic/claude-opus-4.6"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-opus-4.6:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1250"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "312.5"
+cache_write_1h_cents_per_m = "500"
 
 [openrouter."anthropic/claude-opus-4.7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-opus-4.7:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1250"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "312.5"
+cache_write_1h_cents_per_m = "500"
 
 [openrouter."anthropic/claude-opus-4.8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-opus-4.8:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1250"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "312.5"
+cache_write_1h_cents_per_m = "500"
 
 [openrouter."anthropic/claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [openrouter."anthropic/claude-opus-5.5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [openrouter."anthropic/claude-opus-5.5:batch"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [openrouter."anthropic/claude-opus-5:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1250"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "312.5"
+cache_write_1h_cents_per_m = "500"
 
 [openrouter."anthropic/claude-sonnet-4"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[openrouter."anthropic/claude-sonnet-4".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
 
 [openrouter."anthropic/claude-sonnet-4.5"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[openrouter."anthropic/claude-sonnet-4.5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
 
 [openrouter."anthropic/claude-sonnet-4.5:batch"]
 input_cents_per_m = "150"
 output_cents_per_m = "750"
 cache_read_cents_per_m = "15"
 cache_write_cents_per_m = "187.5"
+cache_write_1h_cents_per_m = "300"
+
+[[openrouter."anthropic/claude-sonnet-4.5:batch".tiers]]
+above_tokens = 200000
+input_cents_per_m = "300"
+output_cents_per_m = "1125"
+cache_read_cents_per_m = "30"
+cache_write_cents_per_m = "375"
 
 [openrouter."anthropic/claude-sonnet-4.6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[openrouter."anthropic/claude-sonnet-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
 
 [openrouter."anthropic/claude-sonnet-4.6:batch"]
 input_cents_per_m = "150"
 output_cents_per_m = "750"
 cache_read_cents_per_m = "15"
 cache_write_cents_per_m = "187.5"
+cache_write_1h_cents_per_m = "300"
 
 [openrouter."anthropic/claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [openrouter."anthropic/claude-sonnet-5.5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [openrouter."anthropic/claude-sonnet-5.5:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [openrouter."anthropic/claude-sonnet-5:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [openrouter."apodex/apodex-1.1-mini:free"]
 input_cents_per_m = "0"
@@ -11409,9 +12732,19 @@ output_cents_per_m = "125"
 input_cents_per_m = "25"
 output_cents_per_m = "200"
 
+[[openrouter."bytedance-seed/seed-1.6".tiers]]
+above_tokens = 128000
+input_cents_per_m = "50"
+output_cents_per_m = "400"
+
 [openrouter."bytedance-seed/seed-1.6-flash"]
 input_cents_per_m = "7.5"
 output_cents_per_m = "30"
+
+[[openrouter."bytedance-seed/seed-1.6-flash".tiers]]
+above_tokens = 128000
+input_cents_per_m = "10"
+output_cents_per_m = "80"
 
 [openrouter."bytedance-seed/seed-2-1-turbo"]
 input_cents_per_m = "50"
@@ -11421,13 +12754,28 @@ output_cents_per_m = "250"
 input_cents_per_m = "50"
 output_cents_per_m = "300"
 
+[[openrouter."bytedance-seed/seed-2.0-code".tiers]]
+above_tokens = 128000
+input_cents_per_m = "100"
+output_cents_per_m = "600"
+
 [openrouter."bytedance-seed/seed-2.0-lite"]
 input_cents_per_m = "25"
 output_cents_per_m = "200"
 
+[[openrouter."bytedance-seed/seed-2.0-lite".tiers]]
+above_tokens = 128000
+input_cents_per_m = "50"
+output_cents_per_m = "400"
+
 [openrouter."bytedance-seed/seed-2.0-mini"]
 input_cents_per_m = "10"
 output_cents_per_m = "40"
+
+[[openrouter."bytedance-seed/seed-2.0-mini".tiers]]
+above_tokens = 128000
+input_cents_per_m = "20"
+output_cents_per_m = "80"
 
 [openrouter."bytedance/ui-tars-1.5-7b"]
 input_cents_per_m = "10"
@@ -11584,11 +12932,23 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
 cache_write_cents_per_m = "37.5"
 
+[[openrouter."google/gemini-2.5-pro".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
+
 [openrouter."google/gemini-2.5-pro-preview"]
 input_cents_per_m = "125"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
 cache_write_cents_per_m = "37.5"
+
+[[openrouter."google/gemini-2.5-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
 
 [openrouter."google/gemini-2.5-pro-preview-05-06"]
 input_cents_per_m = "125"
@@ -11596,10 +12956,22 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
 cache_write_cents_per_m = "37.5"
 
+[[openrouter."google/gemini-2.5-pro-preview-05-06".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
+
 [openrouter."google/gemini-2.5-pro:batch"]
 input_cents_per_m = "62.5"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "12.5"
+
+[[openrouter."google/gemini-2.5-pro:batch".tiers]]
+above_tokens = 200000
+input_cents_per_m = "125"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "25"
 
 [openrouter."google/gemini-3-flash-preview"]
 input_cents_per_m = "50"
@@ -11627,6 +12999,13 @@ cache_write_cents_per_m = "37.5"
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[openrouter."google/gemini-3-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
 
 [openrouter."google/gemini-3.1-flash-image"]
 input_cents_per_m = "50"
@@ -11663,15 +13042,33 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "37.5"
 
+[[openrouter."google/gemini-3.1-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
+
 [openrouter."google/gemini-3.1-pro-preview-customtools"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "37.5"
 
+[[openrouter."google/gemini-3.1-pro-preview-customtools".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [openrouter."google/gemini-3.1-pro-preview:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "600"
+
+[[openrouter."google/gemini-3.1-pro-preview:batch".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "900"
 
 [openrouter."google/gemini-3.5-flash"]
 input_cents_per_m = "150"
@@ -12443,6 +13840,12 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[openrouter."openai/gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
+
 [openrouter."openai/gpt-5.4-image-2"]
 input_cents_per_m = "800"
 output_cents_per_m = "1500"
@@ -12472,32 +13875,70 @@ cache_read_cents_per_m = "1"
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
 
+[[openrouter."openai/gpt-5.4-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
+
 [openrouter."openai/gpt-5.4-pro:batch"]
 input_cents_per_m = "1500"
 output_cents_per_m = "9000"
+
+[[openrouter."openai/gpt-5.4-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "3000"
+output_cents_per_m = "13500"
 
 [openrouter."openai/gpt-5.4:batch"]
 input_cents_per_m = "125"
 output_cents_per_m = "750"
 cache_read_cents_per_m = "12.5"
 
+[[openrouter."openai/gpt-5.4:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "250"
+output_cents_per_m = "1125"
+cache_read_cents_per_m = "25"
+
 [openrouter."openai/gpt-5.5"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[openrouter."openai/gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [openrouter."openai/gpt-5.5-pro"]
 input_cents_per_m = "3000"
 output_cents_per_m = "18000"
+
+[[openrouter."openai/gpt-5.5-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "6000"
+output_cents_per_m = "27000"
 
 [openrouter."openai/gpt-5.5-pro:batch"]
 input_cents_per_m = "1500"
 output_cents_per_m = "9000"
 
+[[openrouter."openai/gpt-5.5-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "3000"
+output_cents_per_m = "13500"
+
 [openrouter."openai/gpt-5.5:batch"]
 input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
+
+[[openrouter."openai/gpt-5.5:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "50"
 
 [openrouter."openai/gpt-5.6-luna"]
 input_cents_per_m = "20"
@@ -12505,21 +13946,47 @@ output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
 
+[[openrouter."openai/gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
+
 [openrouter."openai/gpt-5.6-luna-pro"]
 input_cents_per_m = "20"
 output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
 cache_write_cents_per_m = "25"
 
+[[openrouter."openai/gpt-5.6-luna-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "50"
+
 [openrouter."openai/gpt-5.6-luna-pro:batch"]
 input_cents_per_m = "10"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1"
 
+[[openrouter."openai/gpt-5.6-luna-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "90"
+cache_read_cents_per_m = "2"
+
 [openrouter."openai/gpt-5.6-luna:batch"]
 input_cents_per_m = "10"
 output_cents_per_m = "60"
 cache_read_cents_per_m = "1"
+
+[[openrouter."openai/gpt-5.6-luna:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "90"
+cache_read_cents_per_m = "2"
 
 [openrouter."openai/gpt-5.6-sol"]
 input_cents_per_m = "200"
@@ -12527,11 +13994,25 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."openai/gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."openai/gpt-5.6-sol-pro"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+
+[[openrouter."openai/gpt-5.6-sol-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
 
 [openrouter."openai/gpt-5.6-sol-pro:batch"]
 input_cents_per_m = "100"
@@ -12539,11 +14020,25 @@ output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
 
+[[openrouter."openai/gpt-5.6-sol-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "250"
+
 [openrouter."openai/gpt-5.6-sol:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+
+[[openrouter."openai/gpt-5.6-sol:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "250"
 
 [openrouter."openai/gpt-5.6-terra"]
 input_cents_per_m = "200"
@@ -12551,21 +14046,47 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."openai/gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."openai/gpt-5.6-terra-pro"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."openai/gpt-5.6-terra-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."openai/gpt-5.6-terra-pro:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "10"
 
+[[openrouter."openai/gpt-5.6-terra-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "900"
+cache_read_cents_per_m = "20"
+
 [openrouter."openai/gpt-5.6-terra:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "10"
+
+[[openrouter."openai/gpt-5.6-terra:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "900"
+cache_read_cents_per_m = "20"
 
 [openrouter."openai/gpt-5:batch"]
 input_cents_per_m = "62.5"
@@ -12578,11 +14099,25 @@ output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
 
+[[openrouter."openai/gpt-6-astra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
+
 [openrouter."openai/gpt-6-astra-pro"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+
+[[openrouter."openai/gpt-6-astra-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
 
 [openrouter."openai/gpt-6-astra-pro:batch"]
 input_cents_per_m = "500"
@@ -12590,11 +14125,25 @@ output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
 
+[[openrouter."openai/gpt-6-astra-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "3750"
+cache_read_cents_per_m = "100"
+cache_write_cents_per_m = "1250"
+
 [openrouter."openai/gpt-6-astra:batch"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+
+[[openrouter."openai/gpt-6-astra:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "3750"
+cache_read_cents_per_m = "100"
+cache_write_cents_per_m = "1250"
 
 [openrouter."openai/gpt-6-luna"]
 input_cents_per_m = "10"
@@ -12602,11 +14151,25 @@ output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
 
+[[openrouter."openai/gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
+
 [openrouter."openai/gpt-6-luna-pro"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+
+[[openrouter."openai/gpt-6-luna-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
 
 [openrouter."openai/gpt-6-luna-pro:batch"]
 input_cents_per_m = "5"
@@ -12614,11 +14177,25 @@ output_cents_per_m = "25"
 cache_read_cents_per_m = "0.5"
 cache_write_cents_per_m = "6.25"
 
+[[openrouter."openai/gpt-6-luna-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "10"
+output_cents_per_m = "37.5"
+cache_read_cents_per_m = "1"
+cache_write_cents_per_m = "12.5"
+
 [openrouter."openai/gpt-6-luna:batch"]
 input_cents_per_m = "5"
 output_cents_per_m = "25"
 cache_read_cents_per_m = "0.5"
 cache_write_cents_per_m = "6.25"
+
+[[openrouter."openai/gpt-6-luna:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "10"
+output_cents_per_m = "37.5"
+cache_read_cents_per_m = "1"
+cache_write_cents_per_m = "12.5"
 
 [openrouter."openai/gpt-6-sol"]
 input_cents_per_m = "200"
@@ -12626,11 +14203,25 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."openai/gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."openai/gpt-6-sol-pro"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+
+[[openrouter."openai/gpt-6-sol-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
 
 [openrouter."openai/gpt-6-sol-pro:batch"]
 input_cents_per_m = "100"
@@ -12638,11 +14229,25 @@ output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
 
+[[openrouter."openai/gpt-6-sol-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "250"
+
 [openrouter."openai/gpt-6-sol:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+
+[[openrouter."openai/gpt-6-sol:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "250"
 
 [openrouter."openai/gpt-6.1-sol"]
 input_cents_per_m = "200"
@@ -12650,11 +14255,25 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
 
+[[openrouter."openai/gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
+
 [openrouter."openai/gpt-6.1-sol-pro"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+
+[[openrouter."openai/gpt-6.1-sol-pro".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
+cache_write_cents_per_m = "500"
 
 [openrouter."openai/gpt-6.1-sol-pro:batch"]
 input_cents_per_m = "100"
@@ -12662,11 +14281,25 @@ output_cents_per_m = "500"
 cache_read_cents_per_m = "5"
 cache_write_cents_per_m = "125"
 
+[[openrouter."openai/gpt-6.1-sol-pro:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "10"
+cache_write_cents_per_m = "250"
+
 [openrouter."openai/gpt-6.1-sol:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "5"
 cache_write_cents_per_m = "125"
+
+[[openrouter."openai/gpt-6.1-sol:batch".tiers]]
+above_tokens = 272000
+input_cents_per_m = "200"
+output_cents_per_m = "750"
+cache_read_cents_per_m = "10"
+cache_write_cents_per_m = "250"
 
 [openrouter."openai/gpt-audio"]
 input_cents_per_m = "250"
@@ -12837,11 +14470,23 @@ output_cents_per_m = "78"
 cache_read_cents_per_m = "5.2"
 cache_write_cents_per_m = "32.5"
 
+[[openrouter."qwen/qwen-plus".tiers]]
+above_tokens = 256000
+input_cents_per_m = "78"
+output_cents_per_m = "234"
+cache_read_cents_per_m = "15.6"
+cache_write_cents_per_m = "97.5"
+
 [openrouter."qwen/qwen-plus-2025-07-28"]
 input_cents_per_m = "26"
 output_cents_per_m = "78"
 cache_read_cents_per_m = "5.2"
 cache_write_cents_per_m = "32.5"
+
+[[openrouter."qwen/qwen-plus-2025-07-28".tiers]]
+above_tokens = 256000
+input_cents_per_m = "78"
+output_cents_per_m = "234"
 
 [openrouter."qwen/qwen-vl-plus"]
 input_cents_per_m = "21"
@@ -12903,6 +14548,20 @@ output_cents_per_m = "97.5"
 cache_read_cents_per_m = "3.9"
 cache_write_cents_per_m = "24.375"
 
+[[openrouter."qwen/qwen3-coder-flash".tiers]]
+above_tokens = 32000
+input_cents_per_m = "32.5"
+output_cents_per_m = "162.5"
+cache_read_cents_per_m = "6.5"
+cache_write_cents_per_m = "40.625"
+
+[[openrouter."qwen/qwen3-coder-flash".tiers]]
+above_tokens = 128000
+input_cents_per_m = "52"
+output_cents_per_m = "260"
+cache_read_cents_per_m = "10.4"
+cache_write_cents_per_m = "65"
+
 [openrouter."qwen/qwen3-coder-next"]
 input_cents_per_m = "12"
 output_cents_per_m = "80"
@@ -12914,15 +14573,53 @@ output_cents_per_m = "325"
 cache_read_cents_per_m = "13"
 cache_write_cents_per_m = "81.25"
 
+[[openrouter."qwen/qwen3-coder-plus".tiers]]
+above_tokens = 32000
+input_cents_per_m = "117"
+output_cents_per_m = "585"
+cache_read_cents_per_m = "23.4"
+cache_write_cents_per_m = "146.25"
+
+[[openrouter."qwen/qwen3-coder-plus".tiers]]
+above_tokens = 128000
+input_cents_per_m = "195"
+output_cents_per_m = "975"
+cache_read_cents_per_m = "39"
+cache_write_cents_per_m = "243.75"
+
 [openrouter."qwen/qwen3-max"]
 input_cents_per_m = "78"
 output_cents_per_m = "390"
 cache_read_cents_per_m = "15.6"
 cache_write_cents_per_m = "97.5"
 
+[[openrouter."qwen/qwen3-max".tiers]]
+above_tokens = 32000
+input_cents_per_m = "156"
+output_cents_per_m = "780"
+cache_read_cents_per_m = "31.2"
+cache_write_cents_per_m = "195"
+
+[[openrouter."qwen/qwen3-max".tiers]]
+above_tokens = 128000
+input_cents_per_m = "195"
+output_cents_per_m = "975"
+cache_read_cents_per_m = "39"
+cache_write_cents_per_m = "243.75"
+
 [openrouter."qwen/qwen3-max-thinking"]
 input_cents_per_m = "78"
 output_cents_per_m = "390"
+
+[[openrouter."qwen/qwen3-max-thinking".tiers]]
+above_tokens = 32000
+input_cents_per_m = "156"
+output_cents_per_m = "780"
+
+[[openrouter."qwen/qwen3-max-thinking".tiers]]
+above_tokens = 128000
+input_cents_per_m = "195"
+output_cents_per_m = "975"
 
 [openrouter."qwen/qwen3-next-80b-a3b-instruct"]
 input_cents_per_m = "10"
@@ -12992,10 +14689,21 @@ output_cents_per_m = "26"
 input_cents_per_m = "26"
 output_cents_per_m = "156"
 
+[[openrouter."qwen/qwen3.5-plus-02-15".tiers]]
+above_tokens = 256000
+input_cents_per_m = "32.5"
+output_cents_per_m = "195"
+
 [openrouter."qwen/qwen3.5-plus-20260420"]
 input_cents_per_m = "30"
 output_cents_per_m = "180"
 cache_write_cents_per_m = "37.5"
+
+[[openrouter."qwen/qwen3.5-plus-20260420".tiers]]
+above_tokens = 256000
+input_cents_per_m = "37.5"
+output_cents_per_m = "225"
+cache_write_cents_per_m = "46.875"
 
 [openrouter."qwen/qwen3.6-27b"]
 input_cents_per_m = "30"
@@ -13012,21 +14720,53 @@ input_cents_per_m = "18.75"
 output_cents_per_m = "112.5"
 cache_write_cents_per_m = "23.4375"
 
+[[openrouter."qwen/qwen3.6-flash".tiers]]
+above_tokens = 256000
+input_cents_per_m = "75"
+output_cents_per_m = "300"
+cache_write_cents_per_m = "93.75"
+
 [openrouter."qwen/qwen3.6-max-preview"]
 input_cents_per_m = "102.7"
 output_cents_per_m = "616.2"
 cache_write_cents_per_m = "128.375"
+
+[[openrouter."qwen/qwen3.6-max-preview".tiers]]
+above_tokens = 128000
+input_cents_per_m = "158"
+output_cents_per_m = "948"
+cache_write_cents_per_m = "197.5"
 
 [openrouter."qwen/qwen3.6-plus"]
 input_cents_per_m = "32.5"
 output_cents_per_m = "195"
 cache_write_cents_per_m = "40.625"
 
+[[openrouter."qwen/qwen3.6-plus".tiers]]
+above_tokens = 256000
+input_cents_per_m = "130"
+output_cents_per_m = "390"
+cache_write_cents_per_m = "162.5"
+
 [openrouter."qwen/qwen3.7-flash"]
 input_cents_per_m = "3"
 output_cents_per_m = "13"
 cache_read_cents_per_m = "0.6"
 cache_write_cents_per_m = "3.8"
+
+[[openrouter."qwen/qwen3.7-flash".tiers]]
+above_tokens = 32000
+input_cents_per_m = "10"
+output_cents_per_m = "40"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "12.5"
+
+[[openrouter."qwen/qwen3.7-flash".tiers]]
+above_tokens = 256000
+input_cents_per_m = "20"
+output_cents_per_m = "80"
+cache_read_cents_per_m = "4"
+cache_write_cents_per_m = "25"
 
 [openrouter."qwen/qwen3.7-max"]
 input_cents_per_m = "147.5"
@@ -13039,6 +14779,13 @@ input_cents_per_m = "32"
 output_cents_per_m = "128"
 cache_read_cents_per_m = "6.4"
 cache_write_cents_per_m = "40"
+
+[[openrouter."qwen/qwen3.7-plus".tiers]]
+above_tokens = 256000
+input_cents_per_m = "96"
+output_cents_per_m = "384"
+cache_read_cents_per_m = "19.2"
+cache_write_cents_per_m = "120"
 
 [openrouter."qwen/qwen3.8-2.4t-a95b"]
 input_cents_per_m = "200"
@@ -13109,10 +14856,22 @@ input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[openrouter."sakana/fugu-ultra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
+
 [openrouter."sakana/fugu-ultra-v2"]
 input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
+
+[[openrouter."sakana/fugu-ultra-v2".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+cache_read_cents_per_m = "100"
 
 [openrouter."sakana/sakana-namazu"]
 input_cents_per_m = "95"
@@ -13261,40 +15020,88 @@ input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[openrouter."x-ai/grok-4.20".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [openrouter."x-ai/grok-4.20-multi-agent"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[openrouter."x-ai/grok-4.20-multi-agent".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [openrouter."x-ai/grok-4.3"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[openrouter."x-ai/grok-4.3".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [openrouter."x-ai/grok-4.3:batch"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "16"
+
+[[openrouter."x-ai/grok-4.3:batch".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "32"
 
 [openrouter."x-ai/grok-4.5"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "30"
 
+[[openrouter."x-ai/grok-4.5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "60"
+
 [openrouter."x-ai/grok-4.6"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[openrouter."x-ai/grok-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 [openrouter."x-ai/grok-4.7"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
 
+[[openrouter."x-ai/grok-4.7".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
+
 [openrouter."x-ai/grok-build-0.1"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "20"
+
+[[openrouter."x-ai/grok-build-0.1".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "40"
 
 [openrouter."xiaomi/mimo-v2-flash"]
 input_cents_per_m = "10"
@@ -13435,24 +15242,28 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [openrouter."~anthropic/claude-haiku-latest"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [openrouter."~anthropic/claude-opus-latest"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [openrouter."~anthropic/claude-sonnet-latest"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [openrouter."~deepseek/deepseek-flash-latest"]
 input_cents_per_m = "30"
@@ -13481,6 +15292,12 @@ output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "37.5"
 
+[[openrouter."~google/gemini-pro-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [openrouter."~moonshotai/kimi-latest"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
@@ -13492,11 +15309,25 @@ output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
 
+[[openrouter."~openai/gpt-astra-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "2000"
+output_cents_per_m = "7500"
+cache_read_cents_per_m = "200"
+cache_write_cents_per_m = "2500"
+
 [openrouter."~openai/gpt-luna-latest"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+
+[[openrouter."~openai/gpt-luna-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+cache_write_cents_per_m = "25"
 
 [openrouter."~openai/gpt-mini-latest"]
 input_cents_per_m = "75"
@@ -13509,16 +15340,36 @@ output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."~openai/gpt-sol-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."~openai/gpt-terra-latest"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
 
+[[openrouter."~openai/gpt-terra-latest".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "500"
+
 [openrouter."~x-ai/grok-latest"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[openrouter."~x-ai/grok-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 [openrouter."~z-ai/glm-flash-latest"]
 input_cents_per_m = "15"
@@ -13691,6 +15542,12 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[perplexity."google/gemini-3.1-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [perplexity."google/gemini-3.5-flash"]
 input_cents_per_m = "150"
 output_cents_per_m = "900"
@@ -13761,6 +15618,11 @@ input_cents_per_m = "250"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "25"
 
+[[perplexity."openai/gpt-5.4".tiers]]
+above_tokens = 272000
+input_cents_per_m = "500"
+output_cents_per_m = "2250"
+
 [perplexity."openai/gpt-5.4-mini"]
 input_cents_per_m = "75"
 output_cents_per_m = "450"
@@ -13776,35 +15638,76 @@ input_cents_per_m = "500"
 output_cents_per_m = "3000"
 cache_read_cents_per_m = "50"
 
+[[perplexity."openai/gpt-5.5".tiers]]
+above_tokens = 272000
+input_cents_per_m = "1000"
+output_cents_per_m = "4500"
+
 [perplexity."openai/gpt-5.6-luna"]
 input_cents_per_m = "20"
 output_cents_per_m = "120"
 cache_read_cents_per_m = "2"
+
+[[perplexity."openai/gpt-5.6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "40"
+output_cents_per_m = "180"
+cache_read_cents_per_m = "4"
 
 [perplexity."openai/gpt-5.6-sol"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "40"
 
+[[perplexity."openai/gpt-5.6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "800"
+output_cents_per_m = "3000"
+cache_read_cents_per_m = "80"
+
 [perplexity."openai/gpt-5.6-terra"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[perplexity."openai/gpt-5.6-terra".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
 
 [perplexity."openai/gpt-6-luna"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 
+[[perplexity."openai/gpt-6-luna".tiers]]
+above_tokens = 272000
+input_cents_per_m = "20"
+output_cents_per_m = "75"
+cache_read_cents_per_m = "2"
+
 [perplexity."openai/gpt-6-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 
+[[perplexity."openai/gpt-6-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "40"
+
 [perplexity."openai/gpt-6.1-sol"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
+
+[[perplexity."openai/gpt-6.1-sol".tiers]]
+above_tokens = 272000
+input_cents_per_m = "400"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "20"
 
 [perplexity."perplexity/deepseek-v4-flash-0731"]
 input_cents_per_m = "13"
@@ -13928,35 +15831,73 @@ input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[perplexity."xai/grok-4.20-multi-agent".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+
 [perplexity."xai/grok-4.20-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[perplexity."xai/grok-4.20-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
 
 [perplexity."xai/grok-4.20-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[perplexity."xai/grok-4.20-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+
 [perplexity."xai/grok-4.3"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[perplexity."xai/grok-4.3".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
 
 [perplexity."xai/grok-4.5"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "30"
 
+[[perplexity."xai/grok-4.5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "60"
+
 [perplexity."xai/grok-4.6"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
 
+[[perplexity."xai/grok-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
+
 [perplexity."xai/grok-4.7"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[perplexity."xai/grok-4.7".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 # -------------------------------------------------------------------------
 # pinstripes
@@ -14323,6 +16264,11 @@ output_cents_per_m = "250"
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 
+[[replicate."google/gemini-3-pro".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+
 [replicate."ibm-granite/granite-3.3-8b-instruct"]
 input_cents_per_m = "3"
 output_cents_per_m = "25"
@@ -14576,6 +16522,7 @@ input_cents_per_m = "0"
 output_cents_per_m = "0"
 cache_read_cents_per_m = "0"
 cache_write_cents_per_m = "0"
+cache_write_1h_cents_per_m = "0"
 
 # -------------------------------------------------------------------------
 # scaleway
@@ -15469,6 +17416,12 @@ input_cents_per_m = "125"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
 
+[[vercel_ai_gateway."google/gemini-2.5-pro".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
+
 [vercel_ai_gateway."google/gemini-embedding-001"]
 input_cents_per_m = "15"
 output_cents_per_m = "0"
@@ -15786,6 +17739,13 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai."gemini-3-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
+
 [vertex_ai."gemini-3.1-flash-tts-preview"]
 input_cents_per_m = "100"
 output_cents_per_m = "2000"
@@ -15795,10 +17755,24 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai."gemini-3.1-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
+
 [vertex_ai."gemini-3.1-pro-preview-customtools"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[vertex_ai."gemini-3.1-pro-preview-customtools".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
 
 [vertex_ai."gemini-3.5-flash"]
 input_cents_per_m = "150"
@@ -15893,25 +17867,55 @@ input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai."xai/grok-4.20-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [vertex_ai."xai/grok-4.20-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[vertex_ai."xai/grok-4.20-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [vertex_ai."xai/grok-4.3"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai."xai/grok-4.3".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [vertex_ai."xai/grok-4.6"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
 
+[[vertex_ai."xai/grok-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
+
 [vertex_ai."xai/grok-4.7"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[vertex_ai."xai/grok-4.7".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 # -------------------------------------------------------------------------
 # vertex_ai-ai21_models
@@ -15986,168 +17990,228 @@ input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-fable-5-1"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-fable-5-1@default"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "25"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-fable-5@default"]
 input_cents_per_m = "1000"
 output_cents_per_m = "5000"
 cache_read_cents_per_m = "100"
 cache_write_cents_per_m = "1250"
+cache_write_1h_cents_per_m = "2000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-haiku-4-5"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-haiku-4-5@20251001"]
 input_cents_per_m = "100"
 output_cents_per_m = "500"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "125"
+cache_write_1h_cents_per_m = "200"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-haiku-5-5"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[vertex_ai-anthropic_models."vertex_ai/claude-haiku-5-5".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-haiku-5-5@default"]
 input_cents_per_m = "10"
 output_cents_per_m = "50"
 cache_read_cents_per_m = "1"
 cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[vertex_ai-anthropic_models."vertex_ai/claude-haiku-5-5@default".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-5@20251101"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-6"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-6@default"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-7"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-7@default"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-8"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-4-8@default"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-5"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-5-5"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-5-5@default"]
 input_cents_per_m = "400"
 output_cents_per_m = "2000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "500"
+cache_write_1h_cents_per_m = "800"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-opus-5@default"]
 input_cents_per_m = "500"
 output_cents_per_m = "2500"
 cache_read_cents_per_m = "50"
 cache_write_cents_per_m = "625"
+cache_write_1h_cents_per_m = "1000"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-5"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-5@20250929"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
+
+[[vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-5@20250929".tiers]]
+above_tokens = 200000
+input_cents_per_m = "600"
+output_cents_per_m = "2250"
+cache_read_cents_per_m = "60"
+cache_write_cents_per_m = "750"
+cache_write_1h_cents_per_m = "1200"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-6"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-4-6@default"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 cache_read_cents_per_m = "30"
 cache_write_cents_per_m = "375"
+cache_write_1h_cents_per_m = "600"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-5-5"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-5-5@default"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "10"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 [vertex_ai-anthropic_models."vertex_ai/claude-sonnet-5@default"]
 input_cents_per_m = "200"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "20"
 cache_write_cents_per_m = "250"
+cache_write_1h_cents_per_m = "400"
 
 # -------------------------------------------------------------------------
 # vertex_ai-deepseek_models
@@ -16224,6 +18288,11 @@ cache_read_cents_per_m = "20"
 input_cents_per_m = "125"
 output_cents_per_m = "1000"
 
+[[vertex_ai-language-models."gemini-2.5-computer-use-preview-10-2025".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+
 [vertex_ai-language-models."gemini-2.5-flash"]
 input_cents_per_m = "30"
 output_cents_per_m = "250"
@@ -16253,6 +18322,13 @@ input_cents_per_m = "125"
 output_cents_per_m = "1000"
 cache_read_cents_per_m = "12.5"
 
+[[vertex_ai-language-models."gemini-2.5-pro".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "25"
+cache_write_cents_per_m = "25"
+
 [vertex_ai-language-models."gemini-2.5-pro-preview-tts"]
 input_cents_per_m = "100"
 output_cents_per_m = "2000"
@@ -16268,10 +18344,22 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai-language-models."gemini-3-pro-image".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [vertex_ai-language-models."gemini-3-pro-image-preview"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[vertex_ai-language-models."gemini-3-pro-image-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
 
 [vertex_ai-language-models."gemini-3.1-flash-image"]
 input_cents_per_m = "50"
@@ -16303,10 +18391,24 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai-language-models."gemini-3.1-pro-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
+
 [vertex_ai-language-models."gemini-3.1-pro-preview-customtools"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[vertex_ai-language-models."gemini-3.1-pro-preview-customtools".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+cache_write_cents_per_m = "25"
 
 [vertex_ai-language-models."gemini-3.5-flash"]
 input_cents_per_m = "150"
@@ -16378,10 +18480,22 @@ input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
 
+[[vertex_ai-language-models."vertex_ai/gemini-3-pro-image".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
+
 [vertex_ai-language-models."vertex_ai/gemini-3-pro-image-preview"]
 input_cents_per_m = "200"
 output_cents_per_m = "1200"
 cache_read_cents_per_m = "20"
+
+[[vertex_ai-language-models."vertex_ai/gemini-3-pro-image-preview".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1800"
+cache_read_cents_per_m = "40"
 
 [vertex_ai-language-models."vertex_ai/gemini-3.1-flash-image"]
 input_cents_per_m = "50"
@@ -17086,215 +19200,473 @@ input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-0309"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-0309".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-0309-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-0309-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-0309-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-0309-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-beta"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-beta".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-beta-0309"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-beta-0309".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-beta-0309-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-beta-0309-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-beta-0309-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-beta-0309-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-beta-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-beta-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-beta-latest-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-beta-latest-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-beta-latest-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-beta-latest-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-beta-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-beta-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-beta-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-beta-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-experimental-beta-0304"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-experimental-beta-0304".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-experimental-beta-0304-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-experimental-beta-0304-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-experimental-beta-0304-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-experimental-beta-0304-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-experimental-beta-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-experimental-beta-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-experimental-beta-non-reasoning-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-experimental-beta-non-reasoning-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-experimental-beta-reasoning-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-experimental-beta-reasoning-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-multi-agent"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-multi-agent".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-multi-agent-0309"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-multi-agent-0309".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-multi-agent-beta-0309"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-multi-agent-beta-0309".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-multi-agent-beta-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-multi-agent-beta-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-multi-agent-experimental-beta-0304"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-multi-agent-experimental-beta-0304".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-multi-agent-experimental-beta-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-multi-agent-experimental-beta-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-multi-agent-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-multi-agent-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-non-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-non-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-non-reasoning-gv2"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-non-reasoning-gv2".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-non-reasoning-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-non-reasoning-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-reasoning"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-reasoning".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.20-reasoning-gv2"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.20-reasoning-gv2".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.20-reasoning-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.20-reasoning-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.3"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-4.3".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
+
 [xai."grok-4.3-latest"]
 input_cents_per_m = "125"
 output_cents_per_m = "250"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-4.3-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "250"
+output_cents_per_m = "500"
+cache_read_cents_per_m = "40"
 
 [xai."grok-4.5"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "30"
 
+[[xai."grok-4.5".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "60"
+
 [xai."grok-4.5-latest"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "30"
+
+[[xai."grok-4.5-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "60"
 
 [xai."grok-4.6"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
 
+[[xai."grok-4.6".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
+
 [xai."grok-4.7"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "50"
+
+[[xai."grok-4.7".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "100"
 
 [xai."grok-build-0.1"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-build-0.1".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "40"
+
 [xai."grok-build-latest"]
 input_cents_per_m = "200"
 output_cents_per_m = "600"
 cache_read_cents_per_m = "30"
+
+[[xai."grok-build-latest".tiers]]
+above_tokens = 200000
+input_cents_per_m = "400"
+output_cents_per_m = "1200"
+cache_read_cents_per_m = "60"
 
 [xai."grok-code-fast"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-code-fast".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "40"
+
 [xai."grok-code-fast-1"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "20"
 
+[[xai."grok-code-fast-1".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "40"
+
 [xai."grok-code-fast-1-0825"]
 input_cents_per_m = "100"
 output_cents_per_m = "200"
 cache_read_cents_per_m = "20"
+
+[[xai."grok-code-fast-1-0825".tiers]]
+above_tokens = 200000
+input_cents_per_m = "200"
+output_cents_per_m = "400"
+cache_read_cents_per_m = "40"
 
 # -------------------------------------------------------------------------
 # xiaomi_mimo

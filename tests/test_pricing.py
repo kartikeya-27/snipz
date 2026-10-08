@@ -10,7 +10,7 @@ import aiosqlite
 import pytest
 import pytest_asyncio
 
-from snipz import PriceEntry, Pricing, UnknownPricingError
+from snipz import PriceEntry, PriceTier, Pricing, UnknownPricingError
 from snipz.storage.sqlite import SqliteBackend
 
 # ---------------------------------------------------------------------------
@@ -250,6 +250,126 @@ def test_from_toml_non_string_price_raises() -> None:
     """
     with pytest.raises(ValueError, match="must be a quoted string"):
         Pricing.from_toml(toml)
+
+
+# ---------------------------------------------------------------------------
+# Long-prompt tiers and the 1-hour cache-write rate
+# ---------------------------------------------------------------------------
+#
+# Shaped like Claude Haiku 5.5 (base $0.10 / $0.50; over 100K tokens
+# $0.50 / $2.50) plus a second tier to exercise tier selection.
+
+_TIERED_TOML = """
+[anthropic."tiered"]
+input_cents_per_m = "10"
+output_cents_per_m = "50"
+cache_read_cents_per_m = "1"
+cache_write_cents_per_m = "12.5"
+cache_write_1h_cents_per_m = "20"
+
+[[anthropic."tiered".tiers]]
+above_tokens = 500000
+input_cents_per_m = "90"
+
+[[anthropic."tiered".tiers]]
+above_tokens = 100000
+input_cents_per_m = "50"
+output_cents_per_m = "250"
+cache_read_cents_per_m = "5"
+cache_write_cents_per_m = "62.5"
+cache_write_1h_cents_per_m = "100"
+"""
+
+
+def _tiered_cost(**tokens: int) -> Decimal:
+    tokens.setdefault("output_tokens", 0)
+    return Pricing.from_toml(_TIERED_TOML).cost(
+        provider="anthropic", model="tiered", **tokens
+    )
+
+
+def test_tiers_parse_sorted_by_threshold() -> None:
+    entry = Pricing.from_toml(_TIERED_TOML).get("anthropic", "tiered")
+    assert entry is not None
+    assert [t.above_tokens for t in entry.tiers] == [100_000, 500_000]
+    assert entry.cache_write_1h_cents_per_m == Decimal("20")
+
+
+def test_tier_threshold_is_strictly_greater_than() -> None:
+    """"Prompts over 100,000 tokens": exactly 100,000 stays at base rates."""
+    assert _tiered_cost(input_tokens=100_000) == Decimal("1")  # 100K * 10 / 1M
+    assert _tiered_cost(input_tokens=100_001) == Decimal("5.00005")  # * 50
+
+
+def test_tier_applies_to_output_of_a_long_prompt() -> None:
+    """The whole request moves to the tier, output included."""
+    cents = _tiered_cost(input_tokens=200_000, output_tokens=1_000_000)
+    assert cents == Decimal("260")  # 200K * 50 / 1M + 1M * 250 / 1M
+
+
+def test_tier_prompt_size_counts_cache_tokens() -> None:
+    """60K uncached + 50K cache-read is a 110K-token prompt: tier rates."""
+    cents = _tiered_cost(input_tokens=60_000, cache_read_tokens=50_000)
+    assert cents == Decimal("3.25")  # 60K * 50 + 50K * 5, / 1M
+
+
+def test_highest_matching_tier_wins_and_unset_rates_fall_back_to_base() -> None:
+    """Above 500K the second tier sets only input; output falls back to the
+    *base* rate, not the 100K tier's — tiers are independent overrides."""
+    cents = _tiered_cost(input_tokens=600_000, output_tokens=1_000_000)
+    assert cents == Decimal("104")  # 600K * 90 / 1M + 1M * 50 / 1M
+
+
+def test_cache_write_1h_tokens_bill_at_1h_rate() -> None:
+    cents = _tiered_cost(
+        input_tokens=0, cache_write_tokens=10_000, cache_write_1h_tokens=10_000
+    )
+    assert cents == Decimal("0.325")  # 10K * 12.5 + 10K * 20, / 1M
+
+
+def test_cache_write_1h_tokens_without_1h_pricing_raises() -> None:
+    with pytest.raises(ValueError, match="no cache_write_1h pricing"):
+        _fixture_pricing().cost(
+            provider="anthropic",
+            model="claude-3-5-sonnet-20241022",
+            input_tokens=0,
+            output_tokens=0,
+            cache_write_1h_tokens=1,
+        )
+
+
+@pytest.mark.parametrize(
+    ("tier_toml", "message"),
+    [
+        ('above_tokens = "100000"\ninput_cents_per_m = "1"', "positive integer"),
+        ('above_tokens = 0\ninput_cents_per_m = "1"', "positive integer"),
+        ("above_tokens = 100000", "sets no rates"),
+        ("above_tokens = 100000\ninput_cents_per_m = 1", "must be a quoted string"),
+    ],
+)
+def test_invalid_tier_raises(tier_toml: str, message: str) -> None:
+    toml = (
+        '[openai."m"]\ninput_cents_per_m = "1"\noutput_cents_per_m = "1"\n\n'
+        f'[[openai."m".tiers]]\n{tier_toml}\n'
+    )
+    with pytest.raises(ValueError, match=message):
+        Pricing.from_toml(toml)
+
+
+def test_duplicate_tier_thresholds_raise() -> None:
+    tier = '[[openai."m".tiers]]\nabove_tokens = 1000\ninput_cents_per_m = "2"\n'
+    toml = '[openai."m"]\ninput_cents_per_m = "1"\noutput_cents_per_m = "1"\n' + tier + tier
+    with pytest.raises(ValueError, match="duplicate above_tokens"):
+        Pricing.from_toml(toml)
+
+
+def test_default_haiku_5_5_has_long_prompt_tier() -> None:
+    """Haiku 5.5 is the one current Claude model priced by prompt length;
+    the refreshed vendored file must carry that tier (shape, not price)."""
+    entry = Pricing.default().get("anthropic", "claude-haiku-5-5")
+    assert entry is not None
+    assert [t.above_tokens for t in entry.tiers] == [100_000]
+    assert entry.cache_write_1h_cents_per_m is not None
 
 
 # ---------------------------------------------------------------------------
@@ -506,3 +626,77 @@ async def test_with_backend_computes_cost_using_db_override(
         output_tokens=1_000_000,
     )
     assert cents == Decimal("600")
+
+
+async def test_with_backend_reads_1h_rate_and_tiers_from_db(
+    sqlite_backend: tuple[SqliteBackend, Path],
+) -> None:
+    """Migration 0002 columns: a DB override can carry the 1-hour cache-write
+    rate and long-prompt tiers, so overriding a tiered model keeps its tiers."""
+    backend, db_path = sqlite_backend
+    tiers = '[{"above_tokens": 100000, "input_cents_per_m": "50", "output_cents_per_m": "250"}]'
+    async with aiosqlite.connect(str(db_path), isolation_level=None) as conn:
+        await conn.execute(
+            "INSERT INTO snipz_pricing (provider, model, input_cents_per_m, "
+            "output_cents_per_m, cache_write_1h_cents_per_m, tiers, valid_from) "
+            "VALUES ('custom', 'tiered', '10', '50', '20', ?, '2026-01-01T00:00:00.000Z')",
+            (tiers,),
+        )
+    pricing = await Pricing.with_backend(backend)
+
+    entry = pricing.get("custom", "tiered")
+    assert entry is not None
+    assert entry.cache_write_1h_cents_per_m == Decimal("20")
+    assert entry.tiers == (
+        PriceTier(
+            above_tokens=100_000,
+            input_cents_per_m=Decimal("50"),
+            output_cents_per_m=Decimal("250"),
+        ),
+    )
+    cents = pricing.cost(
+        provider="custom", model="tiered", input_tokens=200_000, output_tokens=0
+    )
+    assert cents == Decimal("10")  # 200K * 50 / 1M
+
+
+async def test_with_backend_rejects_invalid_tiers_json(
+    sqlite_backend: tuple[SqliteBackend, Path],
+) -> None:
+    backend, db_path = sqlite_backend
+    async with aiosqlite.connect(str(db_path), isolation_level=None) as conn:
+        await conn.execute(
+            "INSERT INTO snipz_pricing (provider, model, input_cents_per_m, "
+            "output_cents_per_m, tiers, valid_from) "
+            "VALUES ('custom', 'broken', '10', '50', '[{oops', '2026-01-01T00:00:00.000Z')"
+        )
+    with pytest.raises(ValueError, match="invalid tiers JSON"):
+        await Pricing.with_backend(backend)
+
+
+async def test_migrate_upgrades_v1_database_to_v2(tmp_path: Path) -> None:
+    """A database created by 0.2.x (schema v1) gains the 0002 columns on
+    ``migrate()`` without losing existing pricing rows."""
+    from importlib.resources import files
+
+    db_path = tmp_path / "v1.db"
+    v1_sql = files("snipz.storage.migrations.sqlite").joinpath("0001_initial.sql").read_text()
+    async with aiosqlite.connect(str(db_path), isolation_level=None) as conn:
+        await conn.executescript(v1_sql)
+    await _insert_db_pricing(
+        db_path, provider="custom", model="legacy", input_cpm="10", output_cpm="50"
+    )
+
+    backend = SqliteBackend(db_path)
+    try:
+        await backend.migrate()
+        await backend.migrate()  # idempotent
+        async with aiosqlite.connect(str(db_path)) as conn:
+            cur = await conn.execute("SELECT MAX(version) FROM snipz_schema_version")
+            assert await cur.fetchone() == (2,)
+        entry = (await Pricing.with_backend(backend)).get("custom", "legacy")
+        assert entry == PriceEntry(
+            input_cents_per_m=Decimal("10"), output_cents_per_m=Decimal("50")
+        )
+    finally:
+        await backend.close()

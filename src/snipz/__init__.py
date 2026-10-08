@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from snipz.core import Budget, BudgetExceededError, InvalidStateError, Reservation, Scope
 from snipz.estimators import Estimator
-from snipz.pricing import PriceEntry, Pricing, UnknownPricingError
+from snipz.pricing import PriceEntry, PriceTier, Pricing, UnknownPricingError
 
 __version__ = "0.3.0"
 
@@ -19,6 +19,7 @@ __all__ = [
     "Estimator",
     "InvalidStateError",
     "PriceEntry",
+    "PriceTier",
     "Pricing",
     "Reservation",
     "Scope",
