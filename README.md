@@ -100,7 +100,7 @@ What you can rely on:
 
 ## Install
 
-**Requires Python 3.13+.** On older versions `pip install snipz` will report no compatible release.
+**Requires Python 3.11+.** Tested on 3.11, 3.12, 3.13, and 3.14.
 
 ```bash
 pip install snipz                       # core: SQLite, async
