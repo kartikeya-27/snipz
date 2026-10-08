@@ -7,7 +7,7 @@ compute ``actual_cents`` after an LLM call:
     pricing = Pricing.default()
     cents = pricing.cost(
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_tokens=response.usage.input_tokens,
         output_tokens=response.usage.output_tokens,
     )
