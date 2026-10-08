@@ -327,7 +327,7 @@ class Budget:
                 scope=lambda user_id, **kw: Scope("user", user_id),
                 estimate=lambda *a, **kw: Decimal("10"),
                 actual=lambda response, *a, **kw: pricing.cost(
-                    provider="anthropic", model="claude-3-5-sonnet-20241022",
+                    provider="anthropic", model="claude-opus-5-5",
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
                 ),

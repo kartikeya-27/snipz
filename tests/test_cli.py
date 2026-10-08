@@ -141,6 +141,68 @@ def test_translator_empty_input_returns_header_only() -> None:
     assert len(pricing) == 0
 
 
+def test_translator_skips_litellm_sample_spec_placeholder() -> None:
+    """LiteLLM's catalogue opens with a ``sample_spec`` documentation entry
+    whose ``litellm_provider`` is prose. Emitting it unquoted made the whole
+    refreshed file unloadable."""
+    data = {
+        "sample_spec": {
+            "litellm_provider": (
+                "one of https://docs.litellm.ai/docs/providers"
+            ),
+            "input_cost_per_token": 0.0,
+            "output_cost_per_token": 0.0,
+        },
+        **SAMPLE_LITELLM_JSON,
+    }
+    toml_text = _litellm_to_toml(data)
+    assert "sample_spec" not in toml_text
+    assert len(Pricing.from_toml(toml_text)) == 2
+
+
+def test_translator_quotes_non_bare_provider_and_model_keys() -> None:
+    """Provider and model names are upstream data; any of them may contain
+    characters that are not legal in a bare TOML key."""
+    data = {
+        'odd "model" \\ name': {
+            "litellm_provider": "vertex.ai provider",
+            "input_cost_per_token": 0.000001,
+            "output_cost_per_token": 0.000002,
+        },
+    }
+    pricing = Pricing.from_toml(_litellm_to_toml(data))
+    assert pricing.get("vertex.ai provider", 'odd "model" \\ name') is not None
+
+
+@pytest.mark.parametrize("unprefixed_first", [True, False])
+def test_translator_strips_provider_routing_prefix(unprefixed_first: bool) -> None:
+    """``mistral/codestral-latest`` must be priced as ``("mistral",
+    "codestral-latest")``; when upstream also has the bare key, the bare
+    key's prices win regardless of catalogue order."""
+    bare = {
+        "litellm_provider": "gemini",
+        "input_cost_per_token": 0.000001,
+        "output_cost_per_token": 0.000002,
+    }
+    routed = {**bare, "input_cost_per_token": 0.000009}
+    pairs = [("gemini-x", bare), ("gemini/gemini-x", routed)]
+    data: dict[str, Any] = dict(pairs if unprefixed_first else reversed(pairs))
+    data["mistral/codestral-latest"] = {
+        "litellm_provider": "mistral",
+        "input_cost_per_token": 0.0000003,
+        "output_cost_per_token": 0.0000009,
+    }
+
+    pricing = Pricing.from_toml(_litellm_to_toml(data))
+
+    assert pricing.get("mistral", "codestral-latest") is not None
+    assert pricing.get("mistral", "mistral/codestral-latest") is None
+    gemini = pricing.get("gemini", "gemini-x")
+    assert gemini is not None
+    assert gemini.input_cents_per_m == Decimal("100")
+    assert pricing.get("gemini", "gemini/gemini-x") is None
+
+
 # ---------------------------------------------------------------------------
 # main(update-pricing) — end-to-end with monkey-patched fetch
 # ---------------------------------------------------------------------------

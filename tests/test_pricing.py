@@ -16,35 +16,69 @@ from snipz.storage.sqlite import SqliteBackend
 # ---------------------------------------------------------------------------
 # Vendored default
 # ---------------------------------------------------------------------------
+#
+# The vendored file is regenerated from LiteLLM by ``snipz update-pricing``,
+# so these tests assert shape and coverage, never exact prices — a price
+# change upstream must not break the suite.
 
 
 def test_default_loads_known_models() -> None:
-    """The vendored TOML must load and contain at least the seeded providers."""
+    """The vendored TOML must load and cover the first-party providers."""
     pricing = Pricing.default()
 
     assert len(pricing) > 0
     providers = {p for p, _ in pricing.models()}
-    assert {"anthropic", "openai", "google", "mistral"} <= providers
+    assert {"anthropic", "openai", "gemini", "mistral"} <= providers
 
 
-def test_default_anthropic_sonnet_has_cache_pricing() -> None:
-    pricing = Pricing.default()
-    entry = pricing.get("anthropic", "claude-3-5-sonnet-20241022")
-
-    assert entry is not None
-    assert entry.input_cents_per_m == Decimal("300")
-    assert entry.output_cents_per_m == Decimal("1500")
-    assert entry.cache_read_cents_per_m == Decimal("30")
-    assert entry.cache_write_cents_per_m == Decimal("375")
-
-
-def test_default_openai_gpt4o_has_no_cache_pricing() -> None:
-    pricing = Pricing.default()
-    entry = pricing.get("openai", "gpt-4o")
+def test_default_current_anthropic_model_has_full_cache_pricing() -> None:
+    entry = Pricing.default().get("anthropic", "claude-opus-5-5")
 
     assert entry is not None
-    assert entry.cache_read_cents_per_m is None
-    assert entry.cache_write_cents_per_m is None
+    assert entry.cache_read_cents_per_m is not None
+    assert entry.cache_write_cents_per_m is not None
+
+
+def test_default_first_party_model_ids_have_no_routing_prefix() -> None:
+    """``update-pricing`` strips LiteLLM's ``<provider>/`` routing prefix, so
+    ``("mistral", "codestral-latest")`` resolves rather than
+    ``("mistral", "mistral/codestral-latest")``.
+
+    Restricted to first-party APIs: aggregators such as OpenRouter have
+    real model ids like ``openrouter/auto`` that legitimately keep it.
+    """
+    first_party = {"anthropic", "openai", "gemini", "mistral", "xai", "deepseek"}
+    prefixed = [
+        (provider, model)
+        for provider, model in Pricing.default().models()
+        if provider in first_party and model.startswith(f"{provider}/")
+    ]
+    assert prefixed == []
+
+
+# ---------------------------------------------------------------------------
+# Fixed price book for arithmetic tests
+# ---------------------------------------------------------------------------
+#
+# Frozen figures, independent of the vendored snapshot: one model with
+# cache pricing ($3 / $15 per M, cache read $0.30, cache write $3.75) and
+# one without.
+
+_FIXTURE_TOML = """
+[anthropic."claude-3-5-sonnet-20241022"]
+input_cents_per_m = "300"
+output_cents_per_m = "1500"
+cache_read_cents_per_m = "30"
+cache_write_cents_per_m = "375"
+
+[openai."gpt-4o"]
+input_cents_per_m = "250"
+output_cents_per_m = "1000"
+"""
+
+
+def _fixture_pricing() -> Pricing:
+    return Pricing.from_toml(_FIXTURE_TOML)
 
 
 # ---------------------------------------------------------------------------
@@ -53,7 +87,7 @@ def test_default_openai_gpt4o_has_no_cache_pricing() -> None:
 
 
 def test_cost_basic_input_output() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     # 1M input tokens * $3/M + 0 output = $3 = 300 cents.
     cents = pricing.cost(
         provider="anthropic",
@@ -65,7 +99,7 @@ def test_cost_basic_input_output() -> None:
 
 
 def test_cost_mixed_input_output() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     # 1000 input ($0.003) + 500 output ($0.0075) = $0.0105 = 1.05 cents.
     cents = pricing.cost(
         provider="anthropic",
@@ -80,7 +114,7 @@ def test_cost_mixed_input_output() -> None:
 
 
 def test_cost_with_cache_tokens_included() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     # 1M cache_read * $0.30/M = 30 cents.
     cents = pricing.cost(
         provider="anthropic",
@@ -93,7 +127,7 @@ def test_cost_with_cache_tokens_included() -> None:
 
 
 def test_cost_with_cache_write_tokens_included() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     cents = pricing.cost(
         provider="anthropic",
         model="claude-3-5-sonnet-20241022",
@@ -105,7 +139,7 @@ def test_cost_with_cache_write_tokens_included() -> None:
 
 
 def test_cost_zero_tokens_returns_zero() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     cents = pricing.cost(
         provider="anthropic",
         model="claude-3-5-sonnet-20241022",
@@ -117,7 +151,7 @@ def test_cost_zero_tokens_returns_zero() -> None:
 
 def test_cost_preserves_decimal_precision() -> None:
     """A floating-point implementation would lose precision here."""
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     # 1 input token at $3/M = 0.0000003 dollars = 0.00003 cents.
     # 1 * 300 / 1_000_000 = 3e-4 cents.
     cents = pricing.cost(
@@ -143,7 +177,7 @@ def test_cost_preserves_decimal_precision() -> None:
 
 
 def test_cost_unknown_model_raises_unknown_pricing_error() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     with pytest.raises(UnknownPricingError) as excinfo:
         pricing.cost(
             provider="anthropic",
@@ -156,7 +190,7 @@ def test_cost_unknown_model_raises_unknown_pricing_error() -> None:
 
 
 def test_cost_negative_tokens_raises() -> None:
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     with pytest.raises(ValueError, match="non-negative"):
         pricing.cost(
             provider="anthropic",
@@ -168,7 +202,7 @@ def test_cost_negative_tokens_raises() -> None:
 
 def test_cost_cache_tokens_without_cache_pricing_raises() -> None:
     """GPT-4o has no cache pricing; passing cache tokens must fail."""
-    pricing = Pricing.default()
+    pricing = _fixture_pricing()
     with pytest.raises(ValueError, match="no cache_read pricing"):
         pricing.cost(
             provider="openai",
@@ -349,24 +383,24 @@ async def test_with_backend_returns_vendored_when_table_empty(
     backend, _ = sqlite_backend
     pricing = await Pricing.with_backend(backend)
     # Without DB rows, falls back to vendored defaults verbatim.
-    assert pricing.get("anthropic", "claude-3-5-sonnet-20241022") is not None
-    assert pricing.get("openai", "gpt-4o") is not None
+    assert pricing.get("anthropic", "claude-opus-5-5") is not None
+    assert pricing.get("openai", "gpt-5") is not None
 
 
 async def test_with_backend_db_row_overrides_vendored(
     sqlite_backend: tuple[SqliteBackend, Path],
 ) -> None:
     backend, db_path = sqlite_backend
-    # Replace the vendored sonnet price with a custom rate.
+    # Replace the vendored Opus price with a custom rate.
     await _insert_db_pricing(
         db_path,
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_cpm="100",
         output_cpm="500",
     )
     pricing = await Pricing.with_backend(backend)
-    entry = pricing.get("anthropic", "claude-3-5-sonnet-20241022")
+    entry = pricing.get("anthropic", "claude-opus-5-5")
     assert entry == PriceEntry(
         input_cents_per_m=Decimal("100"),
         output_cents_per_m=Decimal("500"),
@@ -383,7 +417,7 @@ async def test_with_backend_picks_latest_valid_from(
     await _insert_db_pricing(
         db_path,
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_cpm="100",
         output_cpm="500",
         valid_from="2026-01-01T00:00:00.000Z",
@@ -392,13 +426,13 @@ async def test_with_backend_picks_latest_valid_from(
     await _insert_db_pricing(
         db_path,
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_cpm="200",
         output_cpm="1000",
         valid_from="2026-06-01T00:00:00.000Z",
     )
     pricing = await Pricing.with_backend(backend)
-    entry = pricing.get("anthropic", "claude-3-5-sonnet-20241022")
+    entry = pricing.get("anthropic", "claude-opus-5-5")
     assert entry is not None
     assert entry.input_cents_per_m == Decimal("200")
     assert entry.output_cents_per_m == Decimal("1000")
@@ -424,7 +458,7 @@ async def test_with_backend_adds_models_not_in_vendored(
         cache_write_cents_per_m=None,
     )
     # Vendored entries still present.
-    assert pricing.get("anthropic", "claude-3-5-sonnet-20241022") is not None
+    assert pricing.get("anthropic", "claude-opus-5-5") is not None
 
 
 async def test_with_backend_carries_cache_pricing_through_db_override(
@@ -459,7 +493,7 @@ async def test_with_backend_computes_cost_using_db_override(
     await _insert_db_pricing(
         db_path,
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_cpm="100",
         output_cpm="500",
     )
@@ -467,7 +501,7 @@ async def test_with_backend_computes_cost_using_db_override(
     # 1M input * 100 cents + 1M output * 500 cents = 600 cents.
     cents = pricing.cost(
         provider="anthropic",
-        model="claude-3-5-sonnet-20241022",
+        model="claude-opus-5-5",
         input_tokens=1_000_000,
         output_tokens=1_000_000,
     )
