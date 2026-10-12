@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
@@ -142,10 +142,16 @@ async def check_totals_postgres(dsn: str) -> list[TotalCheck]:
         rows = await conn.fetch(_ROWS_QUERY)
     finally:
         await conn.close()
+    # asyncpg returns year-1 timestamptz values (the lifetime window start)
+    # naive; a naive/aware == is silently False, so normalize to UTC.
     return _check(
-        [tuple(r) for r in limits],
+        [(t, i, w, _utc(start), m) for t, i, w, start, m in limits],
         [tuple(r) for r in rows],
     )
+
+
+def _utc(value: datetime) -> datetime:
+    return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
 
 
 async def invalidate_totals_sqlite(db_path: Path) -> None:
