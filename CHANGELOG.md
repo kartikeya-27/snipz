@@ -9,7 +9,46 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **`snipz.integrations.anthropic.guarded()`** — wraps an `AsyncAnthropic`
+  client so every `messages.create` call reserves its worst-case cost before
+  it is sent and commits the billed cost from `response.usage` afterwards.
+  Install with `pip install snipz[anthropic]`.
+  - Input is counted exactly with `messages.count_tokens` by default;
+    `input_tokens="estimate"` opts into the local estimator for text-only
+    requests (faster, but a heuristic — Claude's tokenizer varies by model).
+    Output is bounded by `max_tokens`, which is required.
+  - With `cache_control` in the request, every prompt token is reserved at
+    the cache-write rate (1-hour if any breakpoint asks for it).
+  - Settlement rules: an HTTP error status releases (not billed); a
+    timeout, dropped connection, or cancellation commits the reserved bound
+    (may have been billed); an unpriceable response commits the bound and
+    logs instead of raising; a failed commit raises `SettlementError`
+    carrying the paid-for response.
+  - A repeated `request_id` raises `DuplicateRequestError` instead of
+    calling the API a second time.
+  - Not covered yet: streaming (`stream=True` is rejected), per-use
+    server-tool fees, batch / priority service-tier rates, and the beta
+    `client.beta.messages` surface.
+- **`Reservation.created`** — `False` when `Budget.reserve` returned an
+  existing reservation for a repeated `request_id`, so callers can tell a
+  duplicate from fresh work before spending money on it.
+- **Load tests** (`tests/test_load.py`): thousands of concurrent guarded
+  calls with mixed failures and duplicate `request_id`s, reconciled against
+  the ledger. Smoke size by default; `pytest --load` runs 10,000 requests,
+  and CI runs them on SQLite and Postgres.
+
+### Fixed
+
+- **SQLite failed with `database is locked` under concurrency.** With a few
+  hundred concurrent reservations, writers waited in SQLite's polling busy
+  handler and enough of them outlasted `busy_timeout` to fail — including
+  commits after a paid call. Writers now queue in-process and share one
+  long-lived writer connection: of 2,000 concurrent reserve + commit pairs,
+  1,674 (84%) used to fail; now none do, and the batch finishes in ~2 s. `SqliteBackend.close()` now
+  closes that connection (it reopens on next use); use one backend per
+  event loop.
 
 ## [0.3.0] — 2026-10-09
 

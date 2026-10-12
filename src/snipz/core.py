@@ -95,6 +95,12 @@ class Reservation:
     Construct via :meth:`Budget.reserve`. Use as an async context manager
     to auto-commit on success and auto-release on exception, or call
     :meth:`commit` / :meth:`release` / :meth:`observe` explicitly.
+
+    ``created`` is ``True`` when the :meth:`Budget.reserve` call that
+    returned this object inserted the ledger rows, and ``False`` when it
+    returned an existing reservation for a repeated ``request_id``. A
+    caller about to spend money on the reserved work should proceed only
+    when ``created`` is ``True``; otherwise the work is a duplicate.
     """
 
     id: UUID
@@ -106,6 +112,7 @@ class Reservation:
     request_id: str | None
     expires_at: datetime
     _budget: Budget = field(repr=False, compare=False)
+    created: bool = True
 
     async def observe(self, actual_cents: Decimal) -> None:
         """Update ``actual_cents`` to reflect cost observed during streaming."""
@@ -564,4 +571,5 @@ class Budget:
             request_id=first.request_id,
             expires_at=first.expires_at,
             _budget=self,
+            created=False,
         )

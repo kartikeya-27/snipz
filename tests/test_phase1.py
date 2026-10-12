@@ -200,6 +200,8 @@ async def test_idempotent_reserve_returns_same_reservation(budget: Budget) -> No
 
     assert r1.id == r2.id
     assert r2.state == "reserved"
+    assert r1.created is True
+    assert r2.created is False
 
 
 async def test_idempotent_reserve_after_commit(budget: Budget) -> None:
@@ -213,6 +215,7 @@ async def test_idempotent_reserve_after_commit(budget: Budget) -> None:
     r2 = await budget.reserve(scope, Decimal("100"), request_id="req_abc")
     assert r2.id == r1.id
     assert r2.state == "committed"
+    assert r2.created is False
 
 
 async def test_concurrent_idempotent_retries_collapse(budget: Budget) -> None:
@@ -229,6 +232,8 @@ async def test_concurrent_idempotent_retries_collapse(budget: Budget) -> None:
 
     ids = {r.id for r in results}
     assert len(ids) == 1
+    # Exactly one caller inserted the rows; the rest must not redo the work.
+    assert sum(r.created for r in results) == 1
 
 
 # ---------------------------------------------------------------------------

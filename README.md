@@ -98,6 +98,32 @@ What you can rely on:
 
 ---
 
+## Anthropic integration
+
+Wrap an `AsyncAnthropic` client and every `messages.create` call is reserved before it is sent and settled from `response.usage` afterwards — no cost code of your own:
+
+```python
+from anthropic import AsyncAnthropic
+from snipz.integrations.anthropic import guarded
+
+client = guarded(AsyncAnthropic(), budget)
+message = await client.messages.create(
+    scope=Scope("user", "u_42"),
+    model="claude-opus-5-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello"}],
+)
+```
+
+- **Worst-case reservation.** Input is counted exactly with `messages.count_tokens`; output is `max_tokens`; with `cache_control`, every prompt token is priced as a cache write. Long-prompt tiers apply automatically.
+- **Exact settlement.** Commits the billed cost from `usage`, including cache reads and 5-minute / 1-hour cache writes.
+- **Failures settle safely.** An HTTP error status releases the reservation (nothing was billed); a timeout or cancellation commits the reserved bound (it may have been billed).
+- **No double spend.** Pass `request_id=` and a repeat raises `DuplicateRequestError` instead of calling the API again.
+
+Not covered yet: streaming, server-tool fees billed per use (e.g. web search), and batch / priority service-tier rates.
+
+---
+
 ## Install
 
 **Requires Python 3.11+.** Tested on 3.11, 3.12, 3.13, and 3.14.
@@ -105,6 +131,7 @@ What you can rely on:
 ```bash
 pip install snipz                       # core: SQLite, async
 pip install snipz[postgres]             # + asyncpg for Postgres
+pip install snipz[anthropic]            # + the budget-guarded Anthropic client
 pip install snipz[openai]               # + tiktoken for exact OpenAI token counts
 pip install snipz[bench-competitors]    # + litellm, shekel to reproduce the head-to-head benchmark
 ```
@@ -119,6 +146,7 @@ pip install snipz[bench-competitors]    # + litellm, shekel to reproduce the hea
 | Sync wrapper (experimental) | `from snipz.sync import Budget` | For sync codebases — background event loop, raises if called from inside an async loop |
 | `Pricing` | `from snipz import Pricing` | Vendored price book (`Pricing.default()`) + DB overrides (`Pricing.with_backend(...)`) |
 | Estimators | `from snipz.estimators import AnthropicEstimator, OpenAIEstimator, FallbackEstimator` | Pre-flight token counters; OpenAI is exact via tiktoken |
+| Anthropic client | `from snipz.integrations.anthropic import guarded` | Budget-guarded `AsyncAnthropic`: reserve, call, settle from `usage` |
 | `@budget.guard` | `budget.guard(scope=..., estimate=..., actual=...)` | Decorator that wraps an async LLM call with the full reserve/observe/commit/release lifecycle |
 | Hooks | `budget.on_reserved`, `on_committed`, `on_released`, `on_overrun` | Plug-in points for metrics, alerting, audit logs |
 | Sweeper | `snipz sweep [--interval N]` CLI or `snipz.sweep.sweep_loop()` | Background job that releases expired reservations |
@@ -141,8 +169,9 @@ All async/sync surfaces share the same engine and correctness guarantees.
 
 ```bash
 uv sync                          # install all deps + .venv
-uv run pytest                    # 140 tests against SQLite
-uv run pytest --postgres         # + 15 Postgres integration tests (needs Docker)
+uv run pytest                    # SQLite suite (load tests at smoke size)
+uv run pytest --postgres         # + Postgres integration tests (needs Docker)
+uv run pytest --load -s          # load tests at 10,000 requests
 uv run ruff check src/ tests/ benchmarks/
 uv run mypy src/snipz benchmarks/
 ```

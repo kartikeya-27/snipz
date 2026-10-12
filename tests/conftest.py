@@ -17,7 +17,8 @@ import pytest_asyncio
 from snipz import Budget
 
 # ---------------------------------------------------------------------------
-# Pytest hooks: --postgres opt-in flag for tests marked @pytest.mark.postgres
+# Pytest hooks: --postgres opt-in flag for tests marked @pytest.mark.postgres,
+# --load to run tests marked @pytest.mark.load at full size
 # ---------------------------------------------------------------------------
 
 
@@ -30,6 +31,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
             "Run Postgres integration tests. Requires Docker plus the "
             "`asyncpg` and `testcontainers[postgres]` dev dependencies."
         ),
+    )
+    parser.addoption(
+        "--load",
+        action="store_true",
+        default=False,
+        help="Run tests marked `load` at full size (10,000 requests) instead of smoke size.",
     )
 
 

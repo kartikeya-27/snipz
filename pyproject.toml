@@ -28,6 +28,9 @@ dependencies = [
 # Postgres backend. Install with `pip install snipz[postgres]`.
 # SQLite-only deployments (single-node, tests) do not need this.
 postgres = ["asyncpg>=0.30"]
+# Budget-guarded Anthropic client (snipz.integrations.anthropic).
+# Install with `pip install snipz[anthropic]`.
+anthropic = ["anthropic>=1.13,<2"]
 # OpenAI estimator. Install with `pip install snipz[openai]`.
 # Only needed when constructing OpenAIEstimator; Anthropic and fallback
 # estimators have no third-party deps.
@@ -57,6 +60,9 @@ dev = [
     "testcontainers[postgres]>=4.0",
     # OpenAI estimator dev dependency — needed to run estimator tests.
     "tiktoken>=0.7",
+    # Anthropic integration tests run against a fake client but import
+    # the real SDK's types and exceptions.
+    "anthropic>=1.13,<2",
     "pytest-cov>=7.1.0",
 ]
 
@@ -107,6 +113,7 @@ addopts = ["-ra", "--strict-markers", "--strict-config"]
 xfail_strict = true
 markers = [
     "postgres: requires asyncpg + Docker. Skipped by default; pass --postgres to run.",
+    "load: high-volume load test. Runs a small smoke size by default; pass --load for 10,000 requests.",
 ]
 
 [tool.ruff]
@@ -132,7 +139,8 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S105", "S106"]
+# S311: seeded `random` makes load-test orderings reproducible; not crypto.
+"tests/**/*.py" = ["S101", "S105", "S106", "S311"]
 
 [tool.mypy]
 python_version = "3.11"
