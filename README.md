@@ -141,6 +141,28 @@ Not covered yet: server-tool fees billed per use (e.g. web search), and batch / 
 
 ---
 
+## OpenAI integration
+
+The same for the OpenAI Responses API — `create` and `stream`:
+
+```python
+from openai import AsyncOpenAI
+from snipz.integrations.openai import guarded
+
+client = guarded(AsyncOpenAI(), budget)
+response = await client.responses.create(
+    scope=Scope("user", "u_42"), model="gpt-5.6", max_output_tokens=1024, input="Hello",
+)
+```
+
+- **Exact reservation.** Input is counted with `responses.input_tokens.count`; output is `max_output_tokens` (required). Caching is automatic, so on models that charge for cache writes every prompt token is reserved at the write rate.
+- **Billed as OpenAI bills.** Uncached input, cached input, and cache writes each at their own rate; streams settle from the final `response.completed` / `incomplete` / `failed` event, or at the reservation if none arrived.
+- **Rejected up front:** `background=True`, stored `prompt` templates, and `service_tier="priority"` — each would make the recorded cost wrong.
+
+Not covered yet: Chat Completions, built-in tool fees (web search, file search), and flex / batch discounts.
+
+---
+
 ## Install
 
 **Requires Python 3.11+.** Tested on 3.11, 3.12, 3.13, and 3.14.
@@ -149,7 +171,7 @@ Not covered yet: server-tool fees billed per use (e.g. web search), and batch / 
 pip install snipz                       # core: SQLite, async
 pip install snipz[postgres]             # + asyncpg for Postgres
 pip install snipz[anthropic]            # + the budget-guarded Anthropic client
-pip install snipz[openai]               # + tiktoken for exact OpenAI token counts
+pip install snipz[openai]               # + the budget-guarded OpenAI client (and tiktoken)
 pip install snipz[bench-competitors]    # + litellm, shekel to reproduce the head-to-head benchmark
 ```
 
@@ -164,6 +186,7 @@ pip install snipz[bench-competitors]    # + litellm, shekel to reproduce the hea
 | `Pricing` | `from snipz import Pricing` | Vendored price book (`Pricing.default()`) + DB overrides (`Pricing.with_backend(...)`) |
 | Estimators | `from snipz.estimators import AnthropicEstimator, OpenAIEstimator, FallbackEstimator` | Pre-flight token counters; OpenAI is exact via tiktoken |
 | Anthropic client | `from snipz.integrations.anthropic import guarded` | Budget-guarded `AsyncAnthropic`: reserve, call, settle from `usage` |
+| OpenAI client | `from snipz.integrations.openai import guarded` | Budget-guarded `AsyncOpenAI` Responses API: reserve, call, settle from `usage` |
 | `@budget.guard` | `budget.guard(scope=..., estimate=..., actual=...)` | Decorator that wraps an async LLM call with the full reserve/observe/commit/release lifecycle |
 | Hooks | `budget.on_reserved`, `on_committed`, `on_released`, `on_overrun` | Plug-in points for metrics, alerting, audit logs |
 | Sweeper | `snipz sweep [--interval N]` CLI or `snipz.sweep.sweep_loop()` | Background job that releases expired reservations |

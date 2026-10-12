@@ -37,6 +37,23 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
     HTTP error. `messages.create(stream=True)` is rejected in favour of it.
   - Not covered yet: per-use server-tool fees, batch / priority
     service-tier rates, and the beta `client.beta.messages` surface.
+- **`snipz.integrations.openai.guarded()`** — the same for the OpenAI
+  Responses API, `responses.create` and `responses.stream`. Install with
+  `pip install snipz[openai]` (now includes the OpenAI SDK).
+  - Input is counted exactly with `responses.input_tokens.count`; output is
+    bounded by `max_output_tokens` (required). Caching is automatic, so on
+    models that charge for cache writes every prompt token is reserved at
+    the write rate.
+  - Settles as OpenAI bills: uncached input (`input_tokens` less cached and
+    written), cached input, and cache writes each at their own rate; models
+    without a write price bill written tokens as input.
+  - Streams yield the SDK's events unchanged and settle from the final
+    `response.completed` / `incomplete` / `failed` event, or at the
+    reservation if none arrived (OpenAI reports no partial usage).
+  - Rejected before any request: `background=True`, stored `prompt`
+    templates, `service_tier="priority"`, and `create(stream=True)`.
+  - Not covered yet: Chat Completions, built-in tool fees, and flex / batch
+    discounts (billed at standard rates).
 - **`Reservation.created`** — `False` when `Budget.reserve` returned an
   existing reservation for a repeated `request_id`, so callers can tell a
   duplicate from fresh work before spending money on it.

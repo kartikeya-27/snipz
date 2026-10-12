@@ -53,13 +53,13 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import inspect
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Final, Literal
 
 from snipz.estimators.anthropic import AnthropicEstimator
 from snipz.integrations._guard import (
+    check_guarded_args,
     reserve,
     run_guarded,
     settle_failure,
@@ -138,15 +138,9 @@ def guarded(
     through a platform with its own price table. ``ttl`` is the
     reservation lifetime in seconds; set it above your longest request.
     """
-    # The SDK wraps resource methods in a synchronous decorator; unwrap to
-    # see whether the method underneath is a coroutine function.
-    if not inspect.iscoroutinefunction(inspect.unwrap(client.messages.create)):
-        raise TypeError(
-            "guarded() needs an async client such as anthropic.AsyncAnthropic; "
-            f"got {type(client).__name__}"
-        )
-    if ttl <= 0:
-        raise ValueError("ttl must be positive")
+    check_guarded_args(
+        client.messages.create, client, ttl, expected="anthropic.AsyncAnthropic"
+    )
     if input_tokens not in ("count", "estimate"):
         raise ValueError(f"input_tokens must be 'count' or 'estimate', got {input_tokens!r}")
     return GuardedAsyncAnthropic(

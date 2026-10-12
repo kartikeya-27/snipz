@@ -23,6 +23,7 @@ the rules that keep the ledger honest once money may have been spent:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 from collections.abc import Awaitable, Callable, Sequence
 from decimal import Decimal
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
 __all__ = [
     "DuplicateRequestError",
     "SettlementError",
+    "check_guarded_args",
     "reserve",
     "run_guarded",
     "settle_failure",
@@ -118,6 +120,22 @@ async def run_guarded(
         reservation, response, lambda: actual_cents(response), provider=provider, model=model
     )
     return response
+
+
+def check_guarded_args(
+    method: Callable[..., object], client: object, ttl: int, *, expected: str
+) -> None:
+    """Validate the arguments every provider's ``guarded()`` shares.
+
+    SDKs wrap resource methods in a synchronous decorator, so ``method``
+    is unwrapped before checking it is a coroutine function.
+    """
+    if not inspect.iscoroutinefunction(inspect.unwrap(method)):
+        raise TypeError(
+            f"guarded() needs an async client such as {expected}; got {type(client).__name__}"
+        )
+    if ttl <= 0:
+        raise ValueError("ttl must be positive")
 
 
 # ---------------------------------------------------------------------------
