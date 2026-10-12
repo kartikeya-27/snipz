@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -11,8 +12,8 @@ from typing import Any
 import pytest
 import pytest_asyncio
 
-from snipz import Budget, Scope
-from snipz.storage.sqlite import SqliteBackend
+from snipz import Budget, BudgetExceededError, Scope
+from snipz.storage.sqlite import SqliteBackend, _fmt_datetime, _parse_datetime
 
 
 @pytest_asyncio.fixture
@@ -114,3 +115,33 @@ async def test_rolled_back_transaction_keeps_the_writer_connection(
         limit = await conn.fetch_limit(scope_type="user", scope_id="u1", window="month")
     assert limit is not None
     assert limit.cap_cents == Decimal("100")
+
+
+@pytest.mark.parametrize(
+    ("value", "text"),
+    [
+        # The ``lifetime`` window starts at year 1; glibc's strftime("%Y")
+        # used to write it unpadded ("1-01-01..."), which did not parse back.
+        (datetime.min.replace(tzinfo=UTC), "0001-01-01T00:00:00.000Z"),
+        (datetime(2026, 10, 12, 17, 42, 0, 999_999, tzinfo=UTC), "2026-10-12T17:42:00.999Z"),
+    ],
+    ids=["year-1", "truncates-to-ms"],
+)
+def test_datetime_text_format_round_trips(value: datetime, text: str) -> None:
+    assert _fmt_datetime(value) == text
+    assert _parse_datetime(text) == value.replace(microsecond=value.microsecond // 1000 * 1000)
+
+
+async def test_lifetime_window_total_survives_storage(tmp_path: Path) -> None:
+    budget = Budget(tmp_path / "snipz.db")
+    await budget.migrate()
+    scope = Scope("org", "o1", "lifetime")
+    try:
+        await budget.set_limit(scope, Decimal("100"))
+        for _ in range(3):
+            reservation = await budget.reserve(scope, Decimal("10"))
+            await reservation.commit(Decimal("10"))
+        with pytest.raises(BudgetExceededError):
+            await budget.reserve(scope, Decimal("71"))
+    finally:
+        await budget.close()

@@ -28,7 +28,7 @@ import time
 from collections.abc import AsyncIterator, Iterable, Iterator
 from contextlib import asynccontextmanager
 from dataclasses import replace
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from importlib.resources import files
 from importlib.resources.abc import Traversable
@@ -321,7 +321,7 @@ class PostgresLedgerConnection:
                 scope_type=scope_type,
                 scope_id=scope_id,
                 window=record["window"],
-                window_start_at=record["window_start_at"],
+                window_start_at=_as_utc(record["window_start_at"]),
                 spent_micros=record["window_spend_micros"],
             )
             for record in records
@@ -381,6 +381,17 @@ def _parse_rowcount(status: str) -> int:
     last = parts[-1]
     return int(last) if last.isdigit() else 0
 
+
+
+def _as_utc(value: datetime | None) -> datetime | None:
+    """A ``timestamptz`` as an aware UTC datetime.
+
+    asyncpg returns year-1 values (the ``lifetime`` window start) naive;
+    ``timestamptz`` is always a UTC instant, so naive means UTC.
+    """
+    if value is None or value.tzinfo is not None:
+        return value
+    return value.replace(tzinfo=UTC)
 
 
 def _rows_by_id(records: Iterable[Record]) -> dict[UUID, LedgerRow]:

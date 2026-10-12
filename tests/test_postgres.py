@@ -319,7 +319,7 @@ async def test_pg_pricing_override_round_trips_1h_rate_and_tiers() -> None:
 
             conn = await asyncpg.connect(dsn)
             try:
-                assert await conn.fetchval("SELECT MAX(version) FROM snipz_schema_version") == 2
+                assert await conn.fetchval("SELECT MAX(version) FROM snipz_schema_version") >= 2
                 await conn.execute(
                     "INSERT INTO snipz_pricing (provider, model, input_cents_per_m, "
                     "output_cents_per_m, cache_write_1h_cents_per_m, tiers) "

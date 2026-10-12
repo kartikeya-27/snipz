@@ -68,17 +68,16 @@ sqlite3.register_converter("NUMERIC", _decimal_converter)
 # ---------------------------------------------------------------------------
 
 
-_ISO_PREFIX: Final = "%Y-%m-%dT%H:%M:%S"
-
-
 def _fmt_datetime(value: datetime) -> str:
     """Format a UTC datetime to the schema's ISO-8601 string with ms resolution."""
     if value.tzinfo is None:
         raise ValueError("datetime must be timezone-aware")
-    utc = value.astimezone(UTC)
-    # ``%f`` emits microseconds; trim to milliseconds to match the schema.
-    formatted = utc.strftime(f"{_ISO_PREFIX}.%f")
-    return f"{formatted[:-3]}Z"
+    # ``isoformat`` always zero-pads the year; ``strftime("%Y")`` does not on
+    # glibc, which wrote the ``lifetime`` window start (year 1) as "1-01-01".
+    # Milliseconds are truncated, never rounded, so a row never moves into a
+    # later window bucket.
+    utc = value.astimezone(UTC).replace(tzinfo=None)
+    return f"{utc.isoformat(timespec='milliseconds')}Z"
 
 
 def _parse_datetime(value: str) -> datetime:

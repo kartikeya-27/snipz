@@ -166,3 +166,13 @@ def test_unchanged_contribution_writes_nothing() -> None:
     reserved = _row("reserved", "2")
     observed = _row("reserved", "2", "1", row_id=reserved.id)  # still counts at 2
     assert apply_row_changes([_total()], {reserved.id: reserved}, {observed.id: observed}) == []
+
+
+def test_lifetime_window_buckets_compare_cleanly() -> None:
+    """The lifetime window starts at ``datetime.min``; every row falls in it
+    and its total never rolls over."""
+    lifetime = datetime.min.replace(tzinfo=UTC)
+    row = _row(created_at=T0)
+    (total,) = apply_row_changes([_total(lifetime, window="lifetime")], {}, {row.id: row})
+    assert total.window_start_at == lifetime
+    assert spent_in_window(total, T0 + timedelta(days=3650)) == Decimal(2)
