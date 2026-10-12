@@ -28,19 +28,35 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
     carrying the paid-for response.
   - A repeated `request_id` raises `DuplicateRequestError` instead of
     calling the API a second time.
-  - Not covered yet: streaming (`stream=True` is rejected), per-use
-    server-tool fees, batch / priority service-tier rates, and the beta
-    `client.beta.messages` surface.
+  - **Streaming** via `client.messages.stream(scope=..., **params)` — the
+    SDK's own helper, with the reservation taken on entering the
+    `async with` block and the cost committed on exit: the billed usage for
+    a completed stream; the exact prompt usage plus `max_tokens` of output
+    for one that stopped early or failed after its first event; the
+    reservation if no event arrived; released if opening failed with an
+    HTTP error. `messages.create(stream=True)` is rejected in favour of it.
+  - Not covered yet: per-use server-tool fees, batch / priority
+    service-tier rates, and the beta `client.beta.messages` surface.
 - **`Reservation.created`** — `False` when `Budget.reserve` returned an
   existing reservation for a repeated `request_id`, so callers can tell a
   duplicate from fresh work before spending money on it.
 - **Load tests** (`tests/test_load.py`): thousands of concurrent guarded
-  calls with mixed failures and duplicate `request_id`s, reconciled against
-  the ledger. Smoke size by default; `pytest --load` runs 10,000 requests,
-  and CI runs them on SQLite and Postgres.
+  calls and streams with mixed failures and duplicate `request_id`s,
+  reconciled against the ledger. Streams run through the real SDK over a
+  scripted HTTP API (`tests/fake_anthropic_api.py`). Smoke size by default;
+  `pytest --load` runs 10,000 requests, and CI runs them on SQLite and
+  Postgres.
 
 ### Fixed
 
+- **`guarded()` rejected every real `AsyncAnthropic` client** (unreleased
+  code): the SDK wraps resource methods in a synchronous decorator, so the
+  async-client check saw a plain function. It now unwraps first. Found by
+  the new streaming tests, which drive the real SDK over a scripted HTTP API
+  instead of a hand-written fake.
+- **Connection errors escaping a stream's body counted as definitive.** The
+  SDK raises the raw `httpx2` transport error mid-stream rather than
+  `APIConnectionError`; those now count as possibly billed.
 - **Cap checks slowed down as a scope's ledger grew.** Every reservation
   summed the scope's ledger rows for the window, so cost grew with traffic:
   492 ms per reserve + commit with 1M rows in the window (~2/s on that

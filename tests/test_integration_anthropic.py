@@ -98,6 +98,14 @@ def test_guarded_rejects_sync_client(ledger: tuple[Budget, Path]) -> None:
         guarded(anthropic.Anthropic(api_key="test"), budget, pricing=PRICES)  # type: ignore[arg-type]
 
 
+def test_guarded_accepts_the_real_async_client(ledger: tuple[Budget, Path]) -> None:
+    """Regression: the SDK's resource methods are wrapped in a synchronous
+    decorator, so a naive coroutine check rejected every real client."""
+    budget, _ = ledger
+    client = anthropic.AsyncAnthropic(api_key="test")
+    assert guarded(client, budget, pricing=PRICES).client is client
+
+
 def test_guarded_exposes_underlying_client(ledger: tuple[Budget, Path]) -> None:
     budget, _ = ledger
     client = FakeAsyncAnthropic()
@@ -359,7 +367,8 @@ async def test_cancelled_call_commits_the_estimate(ledger: tuple[Budget, Path]) 
     task = asyncio.create_task(
         guarded(client, budget, pricing=PRICES).messages.create(scope=USER, **_request())  # type: ignore[arg-type]
     )
-    await client.messages.called.wait()
+    async with asyncio.timeout(5):  # fail, never hang, if the call never starts
+        await client.messages.called.wait()
 
     task.cancel()
     with pytest.raises(asyncio.CancelledError):

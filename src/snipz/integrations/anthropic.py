@@ -16,6 +16,13 @@ billed cost from ``response.usage`` afterwards::
         messages=[{"role": "user", "content": "Hello"}],
     )
 
+Streaming works the same way through ``messages.stream``, the SDK's
+streaming helper::
+
+    async with client.messages.stream(scope=scope, **params) as stream:
+        async for text in stream.text_stream:
+            ...
+
 The reservation is an upper bound:
 
 * **Input** is counted exactly with ``messages.count_tokens`` (one extra
@@ -28,9 +35,16 @@ The reservation is an upper bound:
   token is priced as a cache write (the 1-hour rate if any breakpoint
   asks for ``ttl="1h"``), the most a prompt token can cost.
 
+A stream settles when its ``async with`` block exits: at the billed
+usage if it ran to completion; at the exact prompt usage plus
+``max_tokens`` of output if it stopped early or failed after the first
+event (generation may have continued until the connection closed); at
+the reservation if no event arrived.
+
 Not covered: server-tool fees billed per use (e.g. web search), batch
 and priority service-tier rates, and the beta ``client.beta.messages``
-surface. Streaming is not wrapped yet — ``stream=True`` is rejected.
+surface. ``messages.create(stream=True)`` is rejected — use
+``messages.stream``.
 
 Requires the ``snipz[anthropic]`` extra.
 """
@@ -45,11 +59,18 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Final, Literal
 
 from snipz.estimators.anthropic import AnthropicEstimator
-from snipz.integrations._guard import run_guarded
+from snipz.integrations._guard import (
+    reserve,
+    run_guarded,
+    settle_failure,
+    settle_quietly,
+    settle_success,
+)
 from snipz.pricing import Pricing, UnknownPricingError
 
 try:
     import anthropic as _anthropic
+    import httpx2
 except ImportError as _exc:  # pragma: no cover
     raise ImportError(
         "snipz.integrations.anthropic requires the Anthropic SDK. "
@@ -57,12 +78,15 @@ except ImportError as _exc:  # pragma: no cover
     ) from _exc
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from anthropic import AsyncAnthropic
+    from anthropic.lib.streaming import AsyncMessageStream, AsyncMessageStreamManager
     from anthropic.types import Message, Usage
 
-    from snipz.core import Budget, Scope
+    from snipz.core import Budget, Reservation, Scope
 
-__all__ = ["GuardedAsyncAnthropic", "GuardedMessages", "guarded"]
+__all__ = ["GuardedAsyncAnthropic", "GuardedMessageStream", "GuardedMessages", "guarded"]
 
 
 InputTokenMode = Literal["count", "estimate"]
@@ -114,7 +138,9 @@ def guarded(
     through a platform with its own price table. ``ttl`` is the
     reservation lifetime in seconds; set it above your longest request.
     """
-    if not inspect.iscoroutinefunction(client.messages.create):
+    # The SDK wraps resource methods in a synchronous decorator; unwrap to
+    # see whether the method underneath is a coroutine function.
+    if not inspect.iscoroutinefunction(inspect.unwrap(client.messages.create)):
         raise TypeError(
             "guarded() needs an async client such as anthropic.AsyncAnthropic; "
             f"got {type(client).__name__}"
@@ -190,10 +216,7 @@ class GuardedMessages:
         Raises :class:`~snipz.BudgetExceededError` before any request is
         sent when the reservation does not fit.
         """
-        model = _validate_params(params)
-        if self._pricing.get(self._provider, model) is None:
-            raise UnknownPricingError(self._provider, model)
-
+        model = self._priced_model(params)
         estimated_cents = await self._estimate_cents(model, params)
 
         async def call() -> Message:
@@ -213,7 +236,33 @@ class GuardedMessages:
             provider=self._provider,
         )
 
+    def stream(
+        self,
+        *,
+        scope: Scope | Sequence[Scope],
+        request_id: str | None = None,
+        **params: Any,
+    ) -> GuardedMessageStream:
+        """``messages.stream`` with a budget reservation around it.
+
+        Use as ``async with``; the block receives the SDK's
+        ``AsyncMessageStream`` unchanged. The reservation is taken — and
+        :class:`~snipz.BudgetExceededError` or
+        :class:`~snipz.integrations.DuplicateRequestError` raised —
+        before the request is sent, on entering the block; the cost is
+        committed when it exits. ``scope`` and ``request_id`` work as in
+        :meth:`create`.
+        """
+        return GuardedMessageStream(self, scope=scope, request_id=request_id, params=params)
+
     # -- pricing --------------------------------------------------------------
+
+    def _priced_model(self, params: Mapping[str, Any]) -> str:
+        """Validate the request; return its model, which must be priced."""
+        model = _validate_params(params)
+        if self._pricing.get(self._provider, model) is None:
+            raise UnknownPricingError(self._provider, model)
+        return model
 
     async def _estimate_cents(self, model: str, params: Mapping[str, Any]) -> Decimal:
         prompt_tokens = await self._prompt_tokens(model, params)
@@ -260,6 +309,27 @@ class GuardedMessages:
         )
         return counted.input_tokens
 
+    def _stream_cents(
+        self,
+        model: str,
+        snapshot: Message | None,
+        params: Mapping[str, Any],
+        reservation: Reservation,
+    ) -> Decimal:
+        """What a stream cost, given how far it got.
+
+        Completed (``stop_reason`` set by the final ``message_delta``): the
+        billed usage. Stopped after ``message_start``: the exact prompt
+        usage, with output at ``max_tokens`` — the model may have kept
+        generating until the connection closed. No events: the reservation.
+        """
+        if snapshot is None:
+            return reservation.estimated_cents
+        usage = snapshot.usage
+        if snapshot.stop_reason is None:
+            usage = usage.model_copy(update={"output_tokens": params["max_tokens"]})
+        return self._usage_cents(model, usage)
+
     def _usage_cents(self, model: str, usage: Usage) -> Decimal:
         # ``cache_creation_input_tokens`` is the total written; the
         # ``cache_creation`` breakdown, when present, splits out 1-hour writes.
@@ -280,6 +350,107 @@ class GuardedMessages:
         )
 
 
+class GuardedMessageStream:
+    """Async context manager returned by :meth:`GuardedMessages.stream`.
+
+    Entering reserves the worst-case cost and opens the stream; exiting
+    closes it and commits what it cost (see the module docstring).
+    Single use, like the SDK manager it wraps.
+    """
+
+    __slots__ = (
+        "_manager",
+        "_messages",
+        "_model",
+        "_params",
+        "_request_id",
+        "_reservation",
+        "_scope",
+        "_stream",
+    )
+
+    def __init__(
+        self,
+        messages: GuardedMessages,
+        *,
+        scope: Scope | Sequence[Scope],
+        request_id: str | None,
+        params: dict[str, Any],
+    ) -> None:
+        self._messages = messages
+        self._scope = scope
+        self._request_id = request_id
+        self._params = params
+        self._model = ""
+        self._reservation: Reservation | None = None
+        self._manager: AsyncMessageStreamManager[Any] | None = None
+        self._stream: AsyncMessageStream[Any] | None = None
+
+    async def __aenter__(self) -> AsyncMessageStream[Any]:
+        if self._reservation is not None:
+            raise RuntimeError("a guarded message stream can only be entered once")
+        messages = self._messages
+        self._model = messages._priced_model(self._params)
+        estimated_cents = await messages._estimate_cents(self._model, self._params)
+        reservation = await reserve(
+            messages._budget,
+            scopes=self._scope,
+            estimated_cents=estimated_cents,
+            request_id=self._request_id,
+            ttl=messages._ttl,
+            model=self._model,
+            provider=messages._provider,
+        )
+        self._reservation = reservation
+        self._manager = messages._client.messages.stream(**self._params)
+        try:
+            self._stream = await self._manager.__aenter__()
+        except BaseException as exc:
+            await settle_failure(reservation, exc, is_ambiguous_failure=_is_ambiguous_failure)
+            raise
+        return self._stream
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
+        reservation, manager, stream = self._reservation, self._manager, self._stream
+        if reservation is None or manager is None or stream is None:
+            return  # __aenter__ raised and already settled
+        try:
+            await manager.__aexit__(exc_type, exc, tb)
+        finally:
+            snapshot = _snapshot(stream)
+            messages = self._messages
+
+            def cost() -> Decimal:
+                return messages._stream_cents(self._model, snapshot, self._params, reservation)
+
+            if exc is None:
+                await settle_success(
+                    reservation, snapshot, cost, provider=messages._provider, model=self._model
+                )
+            else:
+                await settle_quietly(
+                    reservation, cost, provider=messages._provider, model=self._model
+                )
+
+
+def _snapshot(stream: AsyncMessageStream[Any]) -> Message | None:
+    """The stream's accumulated message, or ``None`` before ``message_start``.
+
+    The SDK guards ``current_message_snapshot`` with an ``assert``: it
+    raises ``AssertionError`` before the first event, or returns ``None``
+    under ``python -O``. A test pins this to the installed SDK.
+    """
+    try:
+        return stream.current_message_snapshot
+    except AssertionError:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Request inspection
 # ---------------------------------------------------------------------------
@@ -287,8 +458,8 @@ class GuardedMessages:
 
 def _validate_params(params: Mapping[str, Any]) -> str:
     """Check the parameters the reservation depends on; return the model."""
-    if params.get("stream"):
-        raise ValueError("stream=True is not supported by the guarded client yet")
+    if "stream" in params:
+        raise ValueError("pass streaming requests to messages.stream(), not stream=True")
     model = params.get("model")
     if not isinstance(model, str):
         raise TypeError("messages.create() requires model=<str>")
@@ -305,11 +476,20 @@ def _is_ambiguous_failure(exc: BaseException) -> bool:
 
     An HTTP error status means Anthropic answered and rejected the
     request. A timeout, dropped connection, or cancellation leaves the
-    outcome unknown.
+    outcome unknown — including the raw ``httpx2`` transport errors the
+    SDK lets escape from a stream's body.
     """
     if isinstance(exc, _anthropic.APIStatusError):
         return False
-    return isinstance(exc, (_anthropic.APIConnectionError, asyncio.CancelledError, TimeoutError))
+    return isinstance(
+        exc,
+        (
+            _anthropic.APIConnectionError,
+            httpx2.TransportError,
+            asyncio.CancelledError,
+            TimeoutError,
+        ),
+    )
 
 
 def _cache_ttl(params: Mapping[str, Any]) -> Literal["5m", "1h"] | None:
