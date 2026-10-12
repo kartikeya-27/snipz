@@ -95,6 +95,7 @@ What you can rely on:
 - **Streaming-aware.** `r.observe(actual)` updates the in-flight cost mid-stream; the cap-check formula uses `MAX(actual, estimated)` so concurrent requests see the true running total.
 - **Late-commit safety.** If your call takes longer than the TTL, the sweeper releases the row; a subsequent `commit()` still settles cleanly and fires `on_overrun`.
 - **Multi-scope.** Reserve against `[user_scope, tenant_scope, feature_scope]` in one call — all caps checked atomically, atomic rollback on any failure.
+- **Flat cost at any volume.** The cap check reads a running total kept in the same transaction as each write, so a scope with a million ledger rows this month reserves as fast as an empty one (~2 ms on SQLite).
 
 ---
 

@@ -249,9 +249,10 @@ UPDATE snipz_ledger
  WHERE state = 'reserved' AND expires_at < $2;
 ```
 
-The sweep operation **MUST NOT** lock the limit row. Released rows are
-excluded from the cap-check aggregate, so concurrent reserves on the same
-scope can proceed without coordinating with the sweeper.
+Since schema v3 the sweep **MUST** lock each affected scope (§7.2) before
+releasing its rows: releasing changes the scope's running spend totals.
+(Earlier drafts said the sweep must not lock the limit row; that held only
+while spend was summed from the ledger on every read.)
 
 ## 7. Cap-check formula
 
@@ -290,6 +291,34 @@ Window starts **MUST** be computed in UTC:
 | `day` | `now` truncated to hour 0 |
 | `month` | first day of `now`'s month at 00:00 |
 | `lifetime` | epoch (`0001-01-01T00:00:00Z`) |
+
+### 7.2 Running totals (schema v3)
+
+Summing the ledger on every cap check costs time proportional to the
+scope's traffic. Since schema v3 each `snipz_limits` row carries a running
+total for one window bucket — `window_start_at` and `window_spend_micros`
+— and a cap check reads it instead. The formula above remains the
+definition: a total **MUST** always equal it, computed over the rows whose
+`created_at` falls in the total's bucket.
+
+Every client that writes `snipz_ledger` **MUST**, in the same transaction:
+
+1. Lock each affected scope, in sorted `(scope_type, scope_id)` order,
+   before touching ledger rows: the scope's shared advisory lock
+   (`pg_advisory_xact_lock_shared(hashtextextended(scope_type || chr(31)
+   || scope_id, 0))`), then every limit row of the scope `FOR UPDATE`.
+   `set_limit` takes the advisory lock exclusively.
+2. Store amounts rounded to 6 decimal places (half up), and keep totals in
+   integer micro-cents, so a total is the exact sum of its rows.
+3. Apply each row's change in contribution to every limit row of its scope
+   whose `window_start_at` is the row's bucket. A new row in a later bucket
+   rolls the total over to that bucket.
+4. Set `window_start_at = NULL` when a change cannot be placed. A NULL
+   total is rebuilt from the formula — under the same locks — on its next
+   read; `set_limit` and the v3 migration leave totals NULL.
+
+A client that writes ledger rows without maintaining totals **will** let
+caps drift. Reference implementation: `snipz/storage/spend.py`.
 
 ## 8. State machine
 

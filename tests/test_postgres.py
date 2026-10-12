@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -319,7 +319,7 @@ async def test_pg_pricing_override_round_trips_1h_rate_and_tiers() -> None:
 
             conn = await asyncpg.connect(dsn)
             try:
-                assert await conn.fetchval("SELECT MAX(version) FROM snipz_schema_version") == 2
+                assert await conn.fetchval("SELECT MAX(version) FROM snipz_schema_version") >= 2
                 await conn.execute(
                     "INSERT INTO snipz_pricing (provider, model, input_cents_per_m, "
                     "output_cents_per_m, cache_write_1h_cents_per_m, tiers) "
@@ -337,5 +337,113 @@ async def test_pg_pricing_override_round_trips_1h_rate_and_tiers() -> None:
             )
         finally:
             await backend.close()
+    finally:
+        container.stop()
+
+
+# ---------------------------------------------------------------------------
+# Running spend totals under real concurrency (migration 0003)
+# ---------------------------------------------------------------------------
+
+
+def _pg_dsn(container: Any) -> str:
+    return (
+        f"postgresql://{container.username}:{container.password}"
+        f"@{container.get_container_host_ip()}:{container.get_exposed_port(5432)}"
+        f"/{container.dbname}"
+    )
+
+
+async def test_pg_limit_created_mid_traffic_counts_in_flight_writes() -> None:
+    """``set_limit`` on a busy uncapped scope must not miss reservations in
+    flight at that moment: the exclusive scope lock waits them out."""
+    from testcontainers.postgres import PostgresContainer
+
+    from tests.ledger_audit import check_totals_postgres
+
+    container = PostgresContainer("postgres:16-alpine")
+    container.start()
+    try:
+        dsn = _pg_dsn(container)
+        budget = Budget(dsn)
+        await budget.migrate()
+        scope = Scope("tenant", "busy")
+        try:
+
+            async def traffic(i: int) -> None:
+                reservation = await budget.reserve(scope, Decimal("1"))
+                await asyncio.sleep(0.001 * (i % 5))
+                await reservation.commit(Decimal("0.5"))
+
+            async def add_limit() -> None:
+                await asyncio.sleep(0.05)
+                await budget.set_limit(scope, Decimal("1000000"))
+
+            await asyncio.gather(add_limit(), *(traffic(i) for i in range(400)))
+            # Rebuild the total, then keep using it.
+            for _ in range(20):
+                reservation = await budget.reserve(scope, Decimal("1"))
+                await reservation.commit(Decimal("0.5"))
+        finally:
+            await budget.close()
+
+        checks = await check_totals_postgres(dsn)
+        assert checks, "the total was never rebuilt"
+        assert all(c.stored_micros == c.expected_micros for c in checks), checks
+    finally:
+        container.stop()
+
+
+async def test_pg_composite_writes_and_sweeps_do_not_deadlock() -> None:
+    """Overlapping composite reservations committing, releasing, and being
+    swept concurrently: every scope is locked in one global order, so no
+    deadlock or lock-timeout error, and every total matches the ledger."""
+    from datetime import UTC, datetime
+
+    from testcontainers.postgres import PostgresContainer
+
+    from tests.conftest import FrozenClock
+    from tests.ledger_audit import check_totals_postgres
+
+    container = PostgresContainer("postgres:16-alpine")
+    container.start()
+    try:
+        dsn = _pg_dsn(container)
+        clock = FrozenClock(datetime(2026, 10, 12, 12, tzinfo=UTC))
+        budget = Budget(dsn, now=clock)
+        await budget.migrate()
+        scopes = [Scope("user", f"u{i}", "month") for i in range(4)]
+        for scope in scopes:
+            await budget.set_limit(scope, Decimal("1000000"))
+
+        async def worker(i: int) -> None:
+            pair = [scopes[i % 4], scopes[(i + 1) % 4]]
+            if i % 2:
+                pair.reverse()  # callers pass scopes in any order
+            reservation = await budget.reserve(pair, Decimal("2"), ttl=1 if i % 7 == 0 else 300)
+            await asyncio.sleep(0)
+            if i % 3 == 0:
+                await reservation.release()
+            else:
+                await reservation.commit(Decimal("1"))
+
+        async def sweeper() -> None:
+            for _ in range(20):
+                clock.advance(0.1)
+                await budget.sweep()
+                await asyncio.sleep(0)
+
+        try:
+            results = await asyncio.gather(
+                sweeper(), *(worker(i) for i in range(300)), return_exceptions=True
+            )
+        finally:
+            await budget.close()
+
+        errors = [r for r in results if isinstance(r, BaseException)]
+        assert not errors, errors[:3]
+        checks = await check_totals_postgres(dsn)
+        assert len(checks) == len(scopes)
+        assert all(c.stored_micros == c.expected_micros for c in checks), checks
     finally:
         container.stop()

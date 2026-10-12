@@ -24,10 +24,12 @@ import time
 from collections import Counter
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+import aiosqlite
 import anthropic
 import pytest
 import pytest_asyncio
@@ -60,6 +62,48 @@ BILLED = Decimal("1.05")
 class LoadLedger:
     budget: Budget
     audit: Callable[[], Awaitable[LedgerAudit]]
+    # Insert N committed 1-cent rows for a scope straight into the ledger,
+    # generated server-side so a million rows take seconds.
+    seed_committed_rows: Callable[[Scope, int], Awaitable[None]]
+
+
+_SQLITE_SEED = """
+    WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM seq WHERE n < ?)
+    INSERT INTO snipz_ledger (
+        id, reservation_id, scope_type, scope_id, state, late,
+        estimated_cents, actual_cents, expires_at, created_at, settled_at
+    )
+    SELECT lower(hex(randomblob(16))), lower(hex(randomblob(16))), ?, ?, 'committed', 0,
+           1, 1, ?, ?, ?
+      FROM seq
+"""
+
+_POSTGRES_SEED = """
+    INSERT INTO snipz_ledger (
+        id, reservation_id, scope_type, scope_id, state, late,
+        estimated_cents, actual_cents, expires_at, created_at, settled_at
+    )
+    SELECT gen_random_uuid(), gen_random_uuid(), $1, $2, 'committed', FALSE,
+           1, 1, now(), now(), now()
+      FROM generate_series(1, $3)
+"""
+
+
+async def _seed_sqlite(db_path: Path, scope: Scope, rows: int) -> None:
+    stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    async with aiosqlite.connect(str(db_path)) as conn:
+        await conn.execute(_SQLITE_SEED, (rows, scope.type, scope.id, stamp, stamp, stamp))
+        await conn.commit()
+
+
+async def _seed_postgres(dsn: str, scope: Scope, rows: int) -> None:
+    import asyncpg
+
+    conn = await asyncpg.connect(dsn)
+    try:
+        await conn.execute(_POSTGRES_SEED, scope.type, scope.id, rows)
+    finally:
+        await conn.close()
 
 
 @pytest.fixture
@@ -78,7 +122,11 @@ async def load_ledger(
         budget = Budget(db_path)
         await budget.migrate()
         try:
-            yield LoadLedger(budget, lambda: audit_sqlite(db_path))
+            yield LoadLedger(
+                budget,
+                lambda: audit_sqlite(db_path),
+                lambda scope, rows: _seed_sqlite(db_path, scope, rows),
+            )
         finally:
             await budget.close()
         return
@@ -96,7 +144,11 @@ async def load_ledger(
         budget = Budget(dsn)
         await budget.migrate()
         try:
-            yield LoadLedger(budget, lambda: audit_postgres(dsn))
+            yield LoadLedger(
+                budget,
+                lambda: audit_postgres(dsn),
+                lambda scope, rows: _seed_postgres(dsn, scope, rows),
+            )
         finally:
             await budget.close()
     finally:
@@ -233,6 +285,51 @@ async def test_many_tenants_each_hold_their_cap(
     per_user = [audit.committed("user", user.id) for user in users]
     assert all(spent <= user_cap for spent in per_user)
     assert audit.committed("org", "acme") == sum(per_user) == BILLED * outcomes["ok"]
+
+
+@pytest.fixture
+def ledger_rows(pytestconfig: pytest.Config) -> int:
+    return 1_000_000 if pytestconfig.getoption("--load") else 20_000
+
+
+async def _reserve_commit_p50_ms(budget: Budget, scope: Scope, n: int = 200) -> float:
+    timings = []
+    for _ in range(n):
+        started = time.perf_counter()
+        reservation = await budget.reserve(scope, Decimal("1"))
+        await reservation.commit(Decimal("1"))
+        timings.append((time.perf_counter() - started) * 1000)
+    return sorted(timings)[n // 2]
+
+
+async def test_large_ledger_does_not_slow_reservations(
+    load_ledger: LoadLedger, ledger_rows: int
+) -> None:
+    """A scope with a million committed rows reserves as fast as an empty
+    one: the cap check reads a running total instead of summing the
+    ledger. Its first reservation rebuilds the total once."""
+    budget = load_ledger.budget
+    big, fresh = Scope("tenant", "big", "lifetime"), Scope("tenant", "fresh", "lifetime")
+    await load_ledger.seed_committed_rows(big, ledger_rows)
+    cap = Decimal(ledger_rows * 10)
+    await budget.set_limit(big, cap)  # leaves the total unknown: next read rebuilds
+    await budget.set_limit(fresh, cap)
+
+    started = time.perf_counter()
+    first = await budget.reserve(big, Decimal("1"))
+    await first.commit(Decimal("1"))
+    rebuild_ms = (time.perf_counter() - started) * 1000
+    fresh_p50 = await _reserve_commit_p50_ms(budget, fresh)
+    big_p50 = await _reserve_commit_p50_ms(budget, big)
+    print(
+        f"\n[large ledger] {ledger_rows:,} rows: first reservation (rebuild) {rebuild_ms:.0f} ms;"
+        f" p50 reserve+commit {big_p50:.2f} ms vs {fresh_p50:.2f} ms on an empty scope"
+    )
+
+    assert big_p50 < fresh_p50 * 2 + 1.0
+    audit = await load_ledger.audit()
+    # Seeded rows at 1 cent each, the first reservation, and the 200 timed.
+    assert audit.committed("tenant", "big") == Decimal(ledger_rows + 201)
 
 
 def test_fake_exceptions_are_the_sdk_types_the_tally_expects() -> None:

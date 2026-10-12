@@ -495,15 +495,12 @@ class Budget:
         reservation_id = ledger.new_uuid()
 
         async with self._backend.transaction() as conn:
-            # Lock all limit rows in sorted order, then run cap checks.
+            # Lock every scope in sorted order, then run cap checks.
             # Locking in a deterministic order across all transactions
             # prevents deadlocks under composite reservations.
             for scope in scopes:
-                await conn.lock_limit(
-                    scope_type=scope.type,
-                    scope_id=scope.id,
-                    window=scope.window,
-                )
+                await conn.lock_scope(scope_type=scope.type, scope_id=scope.id)
+            for scope in scopes:
                 limit = await conn.fetch_limit(
                     scope_type=scope.type,
                     scope_id=scope.id,
@@ -515,7 +512,8 @@ class Budget:
                 spent = await conn.current_spend(
                     scope_type=scope.type,
                     scope_id=scope.id,
-                    window_start_at=ledger.window_start(scope.window, now),
+                    window=scope.window,
+                    now=now,
                 )
                 cap = ledger.cap_with_grace(limit)
                 if spent + estimated_cents > cap:
@@ -537,6 +535,7 @@ class Budget:
                     provider=provider,
                     request_id=request_id,
                     expires_at=expires_at,
+                    created_at=now,
                 )
 
         return Reservation(

@@ -674,13 +674,15 @@ async def test_with_backend_rejects_invalid_tiers_json(
         await Pricing.with_backend(backend)
 
 
-async def test_migrate_upgrades_v1_database_to_v2(tmp_path: Path) -> None:
-    """A database created by 0.2.x (schema v1) gains the 0002 columns on
-    ``migrate()`` without losing existing pricing rows."""
+async def test_migrate_upgrades_v1_database_to_latest(tmp_path: Path) -> None:
+    """A database created by 0.2.x (schema v1) gains the pricing columns of
+    later migrations on ``migrate()`` without losing existing pricing rows."""
     from importlib.resources import files
 
+    migrations = files("snipz.storage.migrations.sqlite")
+    latest = max(int(m.name.split("_")[0]) for m in migrations.iterdir() if m.name.endswith(".sql"))
     db_path = tmp_path / "v1.db"
-    v1_sql = files("snipz.storage.migrations.sqlite").joinpath("0001_initial.sql").read_text()
+    v1_sql = migrations.joinpath("0001_initial.sql").read_text()
     async with aiosqlite.connect(str(db_path), isolation_level=None) as conn:
         await conn.executescript(v1_sql)
     await _insert_db_pricing(
@@ -693,7 +695,7 @@ async def test_migrate_upgrades_v1_database_to_v2(tmp_path: Path) -> None:
         await backend.migrate()  # idempotent
         async with aiosqlite.connect(str(db_path)) as conn:
             cur = await conn.execute("SELECT MAX(version) FROM snipz_schema_version")
-            assert await cur.fetchone() == (2,)
+            assert await cur.fetchone() == (latest,)
         entry = (await Pricing.with_backend(backend)).get("custom", "legacy")
         assert entry == PriceEntry(
             input_cents_per_m=Decimal("10"), output_cents_per_m=Decimal("50")

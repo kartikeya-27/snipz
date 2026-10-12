@@ -9,9 +9,10 @@ Conventions:
 * UUIDs stored as ``TEXT`` (the canonical 36-char form). The SQLite
   backend converts at the adapter boundary.
 
-The cap-check formula in :data:`SPEND_QUERY` matches the canonical
-formula in ``snipz-protocol.md`` §7. Any change here MUST be mirrored
-in the Postgres dialect and re-verified against the conformance suite.
+Cap checks read running per-window totals from ``snipz_limits``; the
+canonical spend formula (``snipz-protocol.md`` §7) is applied in
+:mod:`snipz.storage.spend`. Any change here MUST be mirrored in the
+Postgres dialect.
 """
 
 from __future__ import annotations
@@ -25,21 +26,38 @@ LIMIT_LOOKUP: Final = """
 """
 
 
-# State-aware cap-check sum.
-#
-# Committed rows count at ``actual_cents`` (the truth).
-# Reserved rows count at ``MAX(actual, estimated)`` so streaming overruns
-# are visible to the next request.
-#
-# A flat ``MAX`` over both states would over-count committed rows that
-# came in under estimate. Documented in decision log entry 11.
-SPEND_QUERY: Final = """
-    SELECT COALESCE(SUM(
+# Running totals for every window of one scope (see snipz.storage.spend).
+WINDOW_TOTALS: Final = """
+    SELECT window, window_start_at, window_spend_micros
+      FROM snipz_limits
+     WHERE scope_type = ? AND scope_id = ?
+"""
+
+
+STORE_WINDOW_TOTAL: Final = """
+    UPDATE snipz_limits
+       SET window_start_at = ?, window_spend_micros = ?
+     WHERE scope_type = ? AND scope_id = ? AND window = ?
+"""
+
+
+_LEDGER_COLUMNS = """
+    id, reservation_id, scope_type, scope_id, state, late,
+    estimated_cents, actual_cents, request_id, expires_at, created_at
+"""
+
+
+# A scope's spend since a window start, in micro-cents — rebuilds a
+# running total. The canonical formula (committed at actual, reserved at
+# MAX(actual, estimated)), rounded per row to whole micro-cents exactly as
+# snipz.storage.spend.contribution_micros does; a test pins the two
+# together. Served by idx_ledger_scope_window.
+SCOPE_SPEND_MICROS_SINCE: Final = """
+    SELECT COALESCE(SUM(CAST(ROUND(
         CASE
             WHEN state = 'committed' THEN actual_cents
-            WHEN state = 'reserved'  THEN MAX(COALESCE(actual_cents, 0), estimated_cents)
-        END
-    ), 0)
+            ELSE MAX(COALESCE(actual_cents, 0), estimated_cents)
+        END * 1000000) AS INTEGER)), 0)
       FROM snipz_ledger
      WHERE scope_type = ? AND scope_id = ?
        AND state IN ('reserved', 'committed')
@@ -47,21 +65,30 @@ SPEND_QUERY: Final = """
 """
 
 
+RESERVATION_ROWS: Final = f"""
+    SELECT {_LEDGER_COLUMNS} FROM snipz_ledger WHERE reservation_id = ?
+"""  # noqa: S608
+
+
+EXPIRED_ROWS: Final = f"""
+    SELECT {_LEDGER_COLUMNS}
+      FROM snipz_ledger
+     WHERE state = 'reserved' AND expires_at < ?
+"""  # noqa: S608
+
+
 INSERT_LEDGER: Final = """
     INSERT INTO snipz_ledger (
         id, reservation_id, scope_type, scope_id, state, late,
         estimated_cents, actual_cents, model, provider,
-        request_id, expires_at
-    ) VALUES (?, ?, ?, ?, 'reserved', 0, ?, NULL, ?, ?, ?, ?)
+        request_id, expires_at, created_at
+    ) VALUES (?, ?, ?, ?, 'reserved', 0, ?, NULL, ?, ?, ?, ?, ?)
 """
 
 
-FIND_BY_REQUEST_ID: Final = """
-    SELECT id, reservation_id, scope_type, scope_id, state, late,
-           estimated_cents, actual_cents, request_id, expires_at, created_at
-      FROM snipz_ledger
-     WHERE request_id = ?
-"""
+FIND_BY_REQUEST_ID: Final = f"""
+    SELECT {_LEDGER_COLUMNS} FROM snipz_ledger WHERE request_id = ?
+"""  # noqa: S608
 
 
 OBSERVE_UPDATE: Final = """
@@ -99,12 +126,16 @@ SWEEP_EXPIRED: Final = """
 """
 
 
+# A new or changed limit starts with an unknown running total
+# (window_start_at NULL), rebuilt from the ledger on first use.
 UPSERT_LIMIT: Final = """
     INSERT INTO snipz_limits (scope_type, scope_id, window, cap_cents, grace_pct)
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(scope_type, scope_id, window) DO UPDATE SET
         cap_cents = excluded.cap_cents,
         grace_pct = excluded.grace_pct,
+        window_start_at = NULL,
+        window_spend_micros = 0,
         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 """
 
