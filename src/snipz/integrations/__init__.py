@@ -4,6 +4,7 @@ Each provider lives in its own module and needs that provider's SDK,
 installed through the matching extra:
 
 * :mod:`snipz.integrations.anthropic` — ``pip install snipz[anthropic]``
+* :mod:`snipz.integrations.openai` — ``pip install snipz[openai]`` (Responses API)
 
 Importing this package never imports a provider SDK. The errors below
 are shared by every provider wrapper.

@@ -37,8 +37,11 @@ import pytest_asyncio
 from snipz import Budget, BudgetExceededError, Pricing, Scope
 from snipz.integrations import DuplicateRequestError
 from snipz.integrations.anthropic import guarded
+from snipz.integrations.openai import guarded as guarded_openai
 from tests.fake_anthropic import FakeAsyncAnthropic, Outcome
 from tests.fake_anthropic_api import FakeAnthropicAPI, StreamOutcome
+from tests.fake_openai_api import FakeOpenAIAPI
+from tests.fake_openai_api import Outcome as OpenAIOutcome
 from tests.ledger_audit import LedgerAudit, audit_postgres, audit_sqlite
 
 pytestmark = pytest.mark.load
@@ -50,6 +53,10 @@ CONCURRENCY = 200
 PRICES = Pricing.from_toml(
     """
 [anthropic."m"]
+input_cents_per_m = "300"
+output_cents_per_m = "1500"
+
+[openai."gpt-x"]
 input_cents_per_m = "300"
 output_cents_per_m = "1500"
 """
@@ -413,6 +420,93 @@ async def test_streams_hold_cap_and_reconcile(load_ledger: LoadLedger, request_c
     partial = len(early_exits) + served["error_event"] + served["connection_drop"]
     assert committed == STREAM_BILLED * completed + STREAM_PARTIAL * partial
     sent = Counter(body["metadata"]["user_id"] for body in api.stream_requests)
+    assert max(sent.values()) == 1
+
+
+# OpenAI responses via the real SDK (tests.fake_openai_api): 1,000 counted
+# prompt tokens; final events report 800 in / 500 out. OpenAI streams carry
+# no partial usage, so a stream without a final event settles at the
+# reservation.
+OPENAI_ESTIMATE = Decimal("1.8")  # 1,000 counted + max_output_tokens 1,000
+OPENAI_BILLED = Decimal("0.99")  # 800 in + 500 out
+# 70% completed; 5% each: incomplete, failed, SSE error event, dropped
+# connection, HTTP 500 on open, the consumer stopping early.
+OpenAIPlan = OpenAIOutcome | Literal["early_exit"]
+_OPENAI_COMPLETED: OpenAIPlan = "completed"
+_OPENAI_PLANS: list[OpenAIPlan] = [
+    *[_OPENAI_COMPLETED] * 14,
+    "incomplete",
+    "failed",
+    "error_event",
+    "connection_drop",
+    "status_error",
+    "early_exit",
+]
+
+
+async def test_openai_streams_hold_cap_and_reconcile(
+    load_ledger: LoadLedger, request_count: int
+) -> None:
+    """Every way an OpenAI response stream can end, under load, with 5%
+    repeated ``request_id`` values against one capped scope."""
+    budget = load_ledger.budget
+    scope = Scope("tenant", "openai")
+    cap = OPENAI_BILLED * request_count * Decimal("0.4")
+    await budget.set_limit(scope, cap)
+
+    unique_ids = request_count * 95 // 100
+    request_ids = [f"req-{i % unique_ids}" for i in range(request_count)]
+    random.Random(3).shuffle(request_ids)
+    plan: dict[str, OpenAIPlan] = {
+        rid: _OPENAI_PLANS[int(rid.removeprefix("req-")) % len(_OPENAI_PLANS)]
+        for rid in request_ids
+    }
+
+    def served_outcome(body: dict[str, Any]) -> OpenAIOutcome:
+        chosen = plan[body["metadata"]["user_id"]]
+        # An early exit is the consumer's choice; the API serves it in full.
+        return "completed" if chosen == "early_exit" else chosen
+
+    api = FakeOpenAIAPI(outcome=served_outcome)
+    responses = guarded_openai(api.client(), budget, pricing=PRICES).responses
+    early_exits: list[str] = []
+
+    def call(request_id: str) -> Callable[[], Awaitable[Any]]:
+        async def run() -> None:
+            async with responses.stream(
+                scope=scope,
+                request_id=request_id,
+                model="gpt-x",
+                max_output_tokens=1_000,
+                input="hello",
+                metadata={"user_id": request_id},
+            ) as stream:
+                async for _ in stream:
+                    if plan[request_id] == "early_exit":
+                        early_exits.append(request_id)
+                        break
+
+        return run
+
+    outcomes, elapsed = await _drive([call(rid) for rid in request_ids], CONCURRENCY)
+    _report("openai streams", request_count, outcomes, elapsed)
+    audit = await load_ledger.audit()
+    served = api.served
+
+    expected = {"ok", "BudgetExceededError", "DuplicateRequestError"}
+    expected |= {"InternalServerError", "APIConnectionError"}
+    assert set(outcomes) <= expected, outcomes
+    assert sum(outcomes.values()) == request_count
+    assert outcomes["BudgetExceededError"] > 0
+    committed = audit.committed("tenant", "openai")
+    assert committed <= cap
+    assert audit.rows_by_state["reserved"] == 0
+    assert audit.rows_by_state["released"] == served["status_error"]
+    # Final events carry usage; everything else settles at the reservation.
+    with_usage = served["completed"] - len(early_exits) + served["incomplete"] + served["failed"]
+    without = len(early_exits) + served["error_event"] + served["connection_drop"]
+    assert committed == OPENAI_BILLED * with_usage + OPENAI_ESTIMATE * without
+    sent = Counter(body["metadata"]["user_id"] for body in api.requests)
     assert max(sent.values()) == 1
 
 
