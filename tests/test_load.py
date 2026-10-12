@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import aiosqlite
 import anthropic
@@ -38,6 +38,7 @@ from snipz import Budget, BudgetExceededError, Pricing, Scope
 from snipz.integrations import DuplicateRequestError
 from snipz.integrations.anthropic import guarded
 from tests.fake_anthropic import FakeAsyncAnthropic, Outcome
+from tests.fake_anthropic_api import FakeAnthropicAPI, StreamOutcome
 from tests.ledger_audit import LedgerAudit, audit_postgres, audit_sqlite
 
 pytestmark = pytest.mark.load
@@ -330,6 +331,89 @@ async def test_large_ledger_does_not_slow_reservations(
     audit = await load_ledger.audit()
     # Seeded rows at 1 cent each, the first reservation, and the 200 timed.
     assert audit.committed("tenant", "big") == Decimal(ledger_rows + 201)
+
+
+# Streams run through the real SDK over a scripted HTTP API
+# (tests.fake_anthropic_api): 1,000 counted prompt tokens; message_start
+# reports 800; a completed stream bills 500 output tokens.
+STREAM_BILLED = Decimal("0.99")  # 800 in + 500 out
+STREAM_PARTIAL = Decimal("1.74")  # 800 in + max_tokens (1,000) out
+# 80% complete; 5% each: the consumer stops early, an SSE error event, a
+# dropped connection, an HTTP 529 when opening.
+StreamPlan = StreamOutcome | Literal["early_exit"]
+_COMPLETE: StreamPlan = "complete"
+_STREAM_PLANS: list[StreamPlan] = [
+    *[_COMPLETE] * 16,
+    "early_exit",
+    "error_event",
+    "connection_drop",
+    "status_error",
+]
+
+
+async def test_streams_hold_cap_and_reconcile(load_ledger: LoadLedger, request_count: int) -> None:
+    """Every way a stream can end, under load, with 5% repeated
+    ``request_id`` values against one capped scope."""
+    budget = load_ledger.budget
+    scope = Scope("tenant", "streams")
+    cap = STREAM_BILLED * request_count * Decimal("0.4")
+    await budget.set_limit(scope, cap)
+
+    unique_ids = request_count * 95 // 100
+    request_ids = [f"req-{i % unique_ids}" for i in range(request_count)]
+    random.Random(2).shuffle(request_ids)
+    plan: dict[str, StreamPlan] = {
+        rid: _STREAM_PLANS[int(rid.removeprefix("req-")) % len(_STREAM_PLANS)]
+        for rid in request_ids
+    }
+
+    def served_outcome(body: dict[str, Any]) -> StreamOutcome:
+        chosen = plan[body["metadata"]["user_id"]]
+        # An early exit is the consumer's choice; the API serves it in full.
+        return "complete" if chosen == "early_exit" else chosen
+
+    api = FakeAnthropicAPI(outcome=served_outcome)
+    messages = guarded(api.client(), budget, pricing=PRICES).messages
+    early_exits: list[str] = []
+
+    def call(request_id: str) -> Callable[[], Awaitable[Any]]:
+        async def run() -> None:
+            async with messages.stream(
+                scope=scope,
+                request_id=request_id,
+                model="m",
+                max_tokens=1_000,
+                messages=[{"role": "user", "content": "hello"}],
+                metadata={"user_id": request_id},
+            ) as stream:
+                async for _ in stream.text_stream:
+                    if plan[request_id] == "early_exit":
+                        early_exits.append(request_id)
+                        break
+
+        return run
+
+    outcomes, elapsed = await _drive([call(rid) for rid in request_ids], CONCURRENCY)
+    _report("streams", request_count, outcomes, elapsed)
+    audit = await load_ledger.audit()
+    served = api.streams_served
+
+    expected = {"ok", "BudgetExceededError", "DuplicateRequestError"}
+    expected |= {"APIStatusError", "OverloadedError", "ReadError"}
+    assert set(outcomes) <= expected, outcomes
+    assert sum(outcomes.values()) == request_count
+    assert outcomes["BudgetExceededError"] > 0
+    committed = audit.committed("tenant", "streams")
+    assert committed <= cap
+    assert audit.rows_by_state["reserved"] == 0
+    assert audit.rows_by_state["released"] == served["status_error"]
+    # Money reconciles to the cent: completed streams at their billed usage;
+    # streams that stopped after message_start at prompt + max_tokens.
+    completed = served["complete"] - len(early_exits)
+    partial = len(early_exits) + served["error_event"] + served["connection_drop"]
+    assert committed == STREAM_BILLED * completed + STREAM_PARTIAL * partial
+    sent = Counter(body["metadata"]["user_id"] for body in api.stream_requests)
+    assert max(sent.values()) == 1
 
 
 def test_fake_exceptions_are_the_sdk_types_the_tally_expects() -> None:

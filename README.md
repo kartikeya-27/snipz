@@ -121,7 +121,23 @@ message = await client.messages.create(
 - **Failures settle safely.** An HTTP error status releases the reservation (nothing was billed); a timeout or cancellation commits the reserved bound (it may have been billed).
 - **No double spend.** Pass `request_id=` and a repeat raises `DuplicateRequestError` instead of calling the API again.
 
-Not covered yet: streaming, server-tool fees billed per use (e.g. web search), and batch / priority service-tier rates.
+Streaming goes through the SDK's own helper, and settles when the block exits:
+
+```python
+async with client.messages.stream(scope=Scope("user", "u_42"), model="claude-opus-5-5",
+                                  max_tokens=1024, messages=[...]) as stream:
+    async for text in stream.text_stream:
+        print(text, end="")
+```
+
+| The stream… | Ledger records |
+|---|---|
+| ran to completion | the billed usage |
+| stopped early, or failed after the first event | the exact prompt usage + `max_tokens` of output (generation may have continued until disconnect) |
+| closed before any event | the reservation |
+| failed to open with an HTTP error | nothing — released |
+
+Not covered yet: server-tool fees billed per use (e.g. web search), and batch / priority service-tier rates.
 
 ---
 
