@@ -7,6 +7,7 @@ name: CI
 #   test      — SQLite suite across every supported Python (3.11+).
 #   postgres  — the opt-in `--postgres` suite. ubuntu-latest ships
 #               Docker, which testcontainers uses to start postgres:16.
+#   load      — tests/test_load.py at 10,000 requests on SQLite and Postgres.
 #   lint      — ruff + mypy strict on the floor version, so a 3.12+
 #               construct sneaking into src/ fails here first.
 
@@ -60,6 +61,23 @@ jobs:
 
       - name: Run Postgres suite
         run: uv run --python 3.13 pytest --postgres --tb=short
+
+  load:
+    name: Load test (10k requests, SQLite + Postgres)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Install Python 3.13
+        run: uv python install 3.13
+
+      - name: Sync dependencies
+        run: uv sync --python 3.13 --all-extras
+
+      # -s prints each scenario's throughput and outcome tally.
+      - name: Run load tests at full size
+        run: uv run --python 3.13 pytest tests/test_load.py --load --postgres -s --tb=short
 
   lint:
     name: Lint + typecheck

@@ -20,6 +20,7 @@ no-op.
 
 from __future__ import annotations
 
+import asyncio
 import sqlite3
 from collections.abc import AsyncIterator, Iterator, Sequence
 from contextlib import asynccontextmanager
@@ -368,14 +369,27 @@ class SqliteBackend:
     database writer lock at txn start, serializing cap checks across
     writers.
 
-    ``close()`` is a no-op — SQLite has no pool to drain. The method
-    exists for protocol parity with backends that do (Postgres).
+    Writers in this process queue on an :class:`asyncio.Lock` and share
+    one long-lived writer connection. SQLite admits one writer at a time
+    anyway; queueing in-process keeps concurrent writers out of SQLite's
+    polling busy handler (where, under a few hundred concurrent
+    reservations, enough of them outlast ``busy_timeout`` to fail with
+    ``database is locked``), and reusing the connection saves opening
+    one per transaction. ``busy_timeout`` still governs contention with
+    other processes sharing the file. Use one backend per event loop —
+    the queue and the writer connection belong to the loop that first
+    uses them.
+
+    ``close()`` closes the writer connection; the backend reopens it on
+    next use.
     """
 
-    __slots__ = ("_db_path",)
+    __slots__ = ("_db_path", "_write_queue", "_writer")
 
     def __init__(self, db_path: str | Path) -> None:
         self._db_path = str(db_path)
+        self._write_queue = asyncio.Lock()
+        self._writer: aiosqlite.Connection | None = None
 
     @asynccontextmanager
     async def transaction(self) -> AsyncIterator[SqliteLedgerConnection]:
@@ -385,18 +399,22 @@ class SqliteBackend:
         ``BEGIN IMMEDIATE`` so concurrent reservers serialize on the
         lock rather than racing each other's cap checks.
         """
-        conn = await self._open_raw()
-        try:
-            await conn.execute("BEGIN IMMEDIATE")
+        async with self._write_queue:
+            conn = await self._writer_connection()
             try:
-                yield SqliteLedgerConnection(conn)
-            except BaseException:
-                await conn.execute("ROLLBACK")
-                raise
-            else:
+                await conn.execute("BEGIN IMMEDIATE")
+                try:
+                    yield SqliteLedgerConnection(conn)
+                except BaseException:
+                    await conn.execute("ROLLBACK")
+                    raise
                 await conn.execute("COMMIT")
-        finally:
-            await conn.close()
+            except BaseException:
+                if conn.in_transaction:
+                    # ROLLBACK or COMMIT itself failed: the connection's
+                    # state is unknown, so never reuse it.
+                    await self._discard_writer()
+                raise
 
     @asynccontextmanager
     async def connect(self) -> AsyncIterator[SqliteLedgerConnection]:
@@ -409,20 +427,31 @@ class SqliteBackend:
 
     async def migrate(self) -> None:
         """Apply pending migrations idempotently."""
-        conn = await self._open_raw()
-        try:
+        async with self._write_queue:
+            conn = await self._writer_connection()
             current = await self._current_schema_version(conn)
             for entry, _ in self._pending_migrations(current):
                 migration_sql = entry.read_text(encoding="utf-8")
                 await conn.executescript(migration_sql)
-        finally:
-            await conn.close()
 
     async def close(self) -> None:
-        """No-op for SQLite — there is no pool to drain."""
-        return None
+        """Close the writer connection. Safe to call repeatedly."""
+        async with self._write_queue:
+            await self._discard_writer()
 
     # -- internals ------------------------------------------------------------
+
+    async def _writer_connection(self) -> aiosqlite.Connection:
+        """The shared writer connection; caller holds ``_write_queue``."""
+        if self._writer is None:
+            self._writer = await self._open_raw()
+        return self._writer
+
+    async def _discard_writer(self) -> None:
+        """Close and forget the writer connection; caller holds ``_write_queue``."""
+        writer, self._writer = self._writer, None
+        if writer is not None:
+            await writer.close()
 
     async def _open_raw(self) -> aiosqlite.Connection:
         """Open and configure a raw aiosqlite connection."""
