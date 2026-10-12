@@ -14,16 +14,17 @@ Two classes:
 
 For single-node deployments and tests. SQLite has no row-level locking,
 so the writer-lock acquired by ``BEGIN IMMEDIATE`` is what serializes
-concurrent cap checks. ``lock_limit`` on this backend is therefore a
-no-op.
+concurrent cap checks and the running spend totals they read.
+``lock_scope`` on this backend is therefore a no-op.
 """
 
 from __future__ import annotations
 
 import asyncio
 import sqlite3
-from collections.abc import AsyncIterator, Iterator, Sequence
+from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from importlib.resources import files
@@ -34,12 +35,14 @@ from uuid import UUID
 
 import aiosqlite
 
+from snipz.ledger import window_start
 from snipz.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
     PricingRow,
     RequestIdConflictError,
+    spend,
 )
 from snipz.storage.sql import sqlite as sql
 
@@ -128,18 +131,11 @@ class SqliteLedgerConnection:
 
     # -- cap-check operations -------------------------------------------------
 
-    async def lock_limit(
-        self,
-        *,
-        scope_type: str,
-        scope_id: str,
-        window: str,
-    ) -> None:
+    async def lock_scope(self, *, scope_type: str, scope_id: str) -> None:
         # SQLite has no row-level locks. ``BEGIN IMMEDIATE`` (issued by
         # ``SqliteBackend.transaction``) already holds the database
-        # writer lock, so cap checks on every scope are serialized.
-        # Arguments are accepted for protocol compatibility.
-        del scope_type, scope_id, window
+        # writer lock, so every writer on every scope is serialized.
+        del scope_type, scope_id
 
     async def fetch_limit(
         self,
@@ -167,19 +163,16 @@ class SqliteLedgerConnection:
         *,
         scope_type: str,
         scope_id: str,
-        window_start_at: datetime,
+        window: str,
+        now: datetime,
     ) -> Decimal:
-        cur = await self._conn.execute(
-            sql.SPEND_QUERY,
-            (scope_type, scope_id, _fmt_datetime(window_start_at)),
+        total = next(
+            t for t in await self._window_totals(scope_type, scope_id) if t.window == window
         )
-        try:
-            row = await cur.fetchone()
-        finally:
-            await cur.close()
-        if row is None or row[0] is None:
-            return Decimal("0")
-        return Decimal(str(row[0]))
+        spent = spend.spent_in_window(total, now)
+        if spent is not None:
+            return spent
+        return await self._rebuild_total(total, now)
 
     # -- ledger writes --------------------------------------------------------
 
@@ -195,7 +188,9 @@ class SqliteLedgerConnection:
         provider: str | None,
         request_id: str | None,
         expires_at: datetime,
+        created_at: datetime,
     ) -> None:
+        estimated = spend.quantize_cents(estimated_cents)
         try:
             await self._conn.execute(
                 sql.INSERT_LEDGER,
@@ -204,11 +199,12 @@ class SqliteLedgerConnection:
                     str(reservation_id),
                     scope_type,
                     scope_id,
-                    estimated_cents,
+                    estimated,
                     model,
                     provider,
                     request_id,
                     _fmt_datetime(expires_at),
+                    _fmt_datetime(created_at),
                 ),
             )
         except sqlite3.IntegrityError as exc:
@@ -219,19 +215,34 @@ class SqliteLedgerConnection:
             if request_id is None:
                 raise
             raise RequestIdConflictError(request_id) from exc
+        inserted = LedgerRow(
+            id=row_id,
+            reservation_id=reservation_id,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            window="",
+            state="reserved",
+            late=False,
+            estimated_cents=estimated,
+            actual_cents=None,
+            request_id=request_id,
+            expires_at=expires_at,
+            created_at=created_at,
+        )
+        await self._track(before={}, after={row_id: inserted})
 
     async def update_observation(
         self,
         reservation_id: UUID,
         actual_cents: Decimal,
     ) -> int:
-        cur = await self._conn.execute(
-            sql.OBSERVE_UPDATE, (actual_cents, str(reservation_id))
+        rid = str(reservation_id)
+        before = await self._fetch_rows(sql.RESERVATION_ROWS, rid)
+        count = await self._execute(
+            sql.OBSERVE_UPDATE, spend.quantize_cents(actual_cents), rid
         )
-        try:
-            return cur.rowcount
-        finally:
-            await cur.close()
+        await self._track(before, await self._fetch_rows(sql.RESERVATION_ROWS, rid))
+        return count
 
     async def commit_reservation(
         self,
@@ -242,27 +253,17 @@ class SqliteLedgerConnection:
     ) -> CommitOutcome:
         settled_at = _fmt_datetime(now)
         rid = str(reservation_id)
+        actual = spend.quantize_cents(actual_cents)
+        before = await self._fetch_rows(sql.RESERVATION_ROWS, rid)
 
-        cur = await self._conn.execute(
-            sql.COMMIT_NORMAL, (actual_cents, settled_at, rid)
-        )
-        try:
-            normal_count = cur.rowcount
-        finally:
-            await cur.close()
+        count = await self._execute(sql.COMMIT_NORMAL, actual, settled_at, rid)
+        was_late = False
+        if count == 0:
+            count = await self._execute(sql.COMMIT_LATE, actual, settled_at, rid)
+            was_late = count > 0
 
-        if normal_count > 0:
-            return CommitOutcome(rows_affected=normal_count, was_late=False)
-
-        cur = await self._conn.execute(
-            sql.COMMIT_LATE, (actual_cents, settled_at, rid)
-        )
-        try:
-            late_count = cur.rowcount
-        finally:
-            await cur.close()
-
-        return CommitOutcome(rows_affected=late_count, was_late=late_count > 0)
+        await self._track(before, await self._fetch_rows(sql.RESERVATION_ROWS, rid))
+        return CommitOutcome(rows_affected=count, was_late=was_late)
 
     async def release_reservation(
         self,
@@ -270,21 +271,23 @@ class SqliteLedgerConnection:
         *,
         now: datetime,
     ) -> int:
-        cur = await self._conn.execute(
-            sql.RELEASE_BY_CALLER, (_fmt_datetime(now), str(reservation_id))
-        )
-        try:
-            return cur.rowcount
-        finally:
-            await cur.close()
+        rid = str(reservation_id)
+        before = await self._fetch_rows(sql.RESERVATION_ROWS, rid)
+        count = await self._execute(sql.RELEASE_BY_CALLER, _fmt_datetime(now), rid)
+        await self._track(before, await self._fetch_rows(sql.RESERVATION_ROWS, rid))
+        return count
 
     async def sweep_expired(self, *, now: datetime) -> int:
         formatted = _fmt_datetime(now)
-        cur = await self._conn.execute(sql.SWEEP_EXPIRED, (formatted, formatted))
-        try:
-            return cur.rowcount
-        finally:
-            await cur.close()
+        # The writer lock is held, so the UPDATE below changes exactly the
+        # rows selected here.
+        expired = await self._fetch_rows(sql.EXPIRED_ROWS, formatted)
+        count = await self._execute(sql.SWEEP_EXPIRED, formatted, formatted)
+        released = {
+            row_id: replace(row, state="released", late=True) for row_id, row in expired.items()
+        }
+        await self._track(before=expired, after=released)
+        return count
 
     # -- queries --------------------------------------------------------------
 
@@ -321,6 +324,76 @@ class SqliteLedgerConnection:
         finally:
             await cur.close()
         return [_row_to_pricing(r) for r in rows]
+
+    # -- running totals -------------------------------------------------------
+
+    async def _window_totals(self, scope_type: str, scope_id: str) -> list[spend.WindowTotal]:
+        cur = await self._conn.execute(sql.WINDOW_TOTALS, (scope_type, scope_id))
+        try:
+            rows = await cur.fetchall()
+        finally:
+            await cur.close()
+        return [
+            spend.WindowTotal(
+                scope_type=scope_type,
+                scope_id=scope_id,
+                window=str(row[0]),
+                window_start_at=_parse_datetime(str(row[1])) if row[1] is not None else None,
+                spent_micros=int(row[2]),
+            )
+            for row in rows
+        ]
+
+    async def _store_totals(self, totals: Iterable[spend.WindowTotal]) -> None:
+        for total in totals:
+            start = total.window_start_at
+            await self._conn.execute(
+                sql.STORE_WINDOW_TOTAL,
+                (
+                    _fmt_datetime(start) if start is not None else None,
+                    total.spent_micros,
+                    total.scope_type,
+                    total.scope_id,
+                    total.window,
+                ),
+            )
+
+    async def _rebuild_total(self, total: spend.WindowTotal, now: datetime) -> Decimal:
+        """Recompute ``total`` for the window containing ``now`` and store it."""
+        start = window_start(total.window, now)
+        cur = await self._conn.execute(
+            sql.SCOPE_SPEND_MICROS_SINCE,
+            (total.scope_type, total.scope_id, _fmt_datetime(start)),
+        )
+        try:
+            row = await cur.fetchone()
+        finally:
+            await cur.close()
+        micros = int(row[0]) if row is not None else 0
+        await self._store_totals([replace(total, window_start_at=start, spent_micros=micros)])
+        return spend.from_micros(micros)
+
+    async def _track(self, before: dict[UUID, LedgerRow], after: dict[UUID, LedgerRow]) -> None:
+        """Fold a write's row changes into the affected scopes' totals."""
+        rows = (*before.values(), *after.values())
+        scopes = sorted({(row.scope_type, row.scope_id) for row in rows})
+        totals = [t for scope in scopes for t in await self._window_totals(*scope)]
+        await self._store_totals(spend.apply_row_changes(totals, before, after))
+
+    async def _fetch_rows(self, query: str, *params: object) -> dict[UUID, LedgerRow]:
+        cur = await self._conn.execute(query, params)
+        try:
+            rows = await cur.fetchall()
+        finally:
+            await cur.close()
+        return {row.id: row for row in map(_row_to_ledger, rows)}
+
+    async def _execute(self, query: str, *params: object) -> int:
+        cur = await self._conn.execute(query, params)
+        try:
+            return cur.rowcount
+        finally:
+            await cur.close()
 
 
 def _row_to_pricing(row: Sequence[object]) -> PricingRow:

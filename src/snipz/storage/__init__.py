@@ -130,24 +130,27 @@ class LedgerConnection(Protocol):
     asyncpg) and dispatch to dialect-specific SQL. All UUIDs, datetimes,
     decimals, and booleans are exchanged as native Python types — any
     storage-specific stringification is the implementation's concern.
+
+    Every ledger write also keeps the running per-window spend totals on
+    the affected scopes' limit rows current, in the same transaction
+    (rules in :mod:`snipz.storage.spend`). Writes that touch several
+    scopes lock them in sorted ``(scope_type, scope_id)`` order, scope
+    lock before ledger rows, so concurrent writers cannot deadlock.
+    Amounts are stored rounded by :func:`snipz.storage.spend.quantize_cents`.
     """
 
-    async def lock_limit(
-        self,
-        *,
-        scope_type: str,
-        scope_id: str,
-        window: str,
-    ) -> None:
-        """Acquire a writer lock on the limit row for this scope.
+    async def lock_scope(self, *, scope_type: str, scope_id: str) -> None:
+        """Lock a scope for a ledger write: all of its limit rows.
 
-        SQLite implementations are typically a no-op: the whole-database
-        write lock acquired via ``BEGIN IMMEDIATE`` already serializes
-        cap checks. Postgres implementations issue
-        ``SELECT ... FOR UPDATE`` on the limit row, with a bounded
-        ``lock_timeout`` so contended waiters fail fast.
+        SQLite implementations are a no-op: the whole-database write lock
+        acquired via ``BEGIN IMMEDIATE`` already serializes writers.
+        Postgres implementations take the scope's shared advisory lock
+        (``upsert_limit`` takes it exclusively) and then
+        ``SELECT ... FOR UPDATE`` every limit row of the scope, under a
+        bounded ``lock_timeout`` so contended waiters fail fast.
 
-        MUST be called inside a transaction.
+        MUST be called inside a transaction; callers locking several
+        scopes MUST do so in sorted order.
         """
         ...
 
@@ -166,13 +169,17 @@ class LedgerConnection(Protocol):
         *,
         scope_type: str,
         scope_id: str,
-        window_start_at: datetime,
+        window: str,
+        now: datetime,
     ) -> Decimal:
-        """Sum the in-window spend for a scope using the state-aware formula.
+        """Spend for a scope in the ``window`` containing ``now``.
 
         Committed rows count at ``actual_cents``; reserved rows count at
         ``MAX(actual_cents, estimated_cents)`` so streaming overruns are
-        visible to subsequent cap checks.
+        visible to subsequent cap checks. Read from the limit row's
+        running total; an unknown total is rebuilt from the ledger and
+        stored. The scope MUST be locked (:meth:`lock_scope`) and have a
+        limit row for ``window``.
         """
         ...
 
@@ -188,8 +195,13 @@ class LedgerConnection(Protocol):
         provider: str | None,
         request_id: str | None,
         expires_at: datetime,
+        created_at: datetime,
     ) -> None:
-        """Insert a new reserved row.
+        """Insert a new reserved row and add it to the scope's totals.
+
+        ``created_at`` places the row in its window buckets; pass the
+        same clock reading the cap check used. The scope MUST be locked
+        (:meth:`lock_scope`).
 
         Raises :class:`RequestIdConflictError` on ``request_id`` collision;
         callers catch and re-query to converge concurrent retries onto
@@ -258,7 +270,13 @@ class LedgerConnection(Protocol):
         cap_cents: Decimal,
         grace_pct: int,
     ) -> None:
-        """Configure or update a scope's cap."""
+        """Configure or update a scope's cap.
+
+        Marks the limit's running total unknown so it is rebuilt from the
+        ledger on next use. Postgres implementations hold the scope's
+        advisory lock exclusively, so no ledger write on the scope is in
+        flight while the limit changes.
+        """
         ...
 
     async def load_pricing(self) -> list[PricingRow]:

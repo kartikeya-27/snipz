@@ -41,12 +41,44 @@ changes; PATCH bumps (`0.x.y`) are bug fixes only.
 
 ### Fixed
 
+- **Cap checks slowed down as a scope's ledger grew.** Every reservation
+  summed the scope's ledger rows for the window, so cost grew with traffic:
+  492 ms per reserve + commit with 1M rows in the window (~2/s on that
+  scope), 52 ms at 100K. Each limit row now keeps a running total for its
+  current window, updated in the same transaction as every ledger write:
+  2.2 ms at 1M rows — the same as an empty scope. Totals are integer
+  micro-cents and match the ledger exactly; a 3,000-step randomized test
+  checks every total against the ledger after every operation, on SQLite
+  and Postgres.
 - **SQLite failed with `database is locked` under concurrency.** With a few
   hundred concurrent reservations, writers waited in SQLite's polling busy
   handler and enough of them outlasted `busy_timeout` to fail — including
   commits after a paid call. Writers now queue in-process and share one
   long-lived writer connection: of 2,000 concurrent reserve + commit pairs,
-  1,674 (84%) used to fail; now none do, and the batch finishes in ~2 s. `SqliteBackend.close()` now
+  1,674 (84%) used to fail; now none do, and the batch finishes in ~2 s.
+
+### Changed
+
+- **Schema migration 0003** adds `window_start_at` and `window_spend_micros`
+  to `snipz_limits`. Run `budget.migrate()` after upgrading. Existing limits
+  start with an unknown total, rebuilt once on the scope's next reservation
+  with a single SQL sum (~0.4 s for a 1M-row window).
+- **Amounts are stored at 6 decimal places** (micro-cents, rounded half up)
+  on every backend. Postgres already stored `NUMERIC(20, 6)`; SQLite stored
+  floats.
+- **Ledger rows take `created_at` from the engine's clock** (the one the cap
+  check uses) instead of the database's.
+- **Storage protocol (custom backends):** `LedgerConnection.lock_limit` is
+  replaced by `lock_scope(scope_type, scope_id)`, which locks every limit row
+  of the scope; `current_spend` takes `window` and `now` instead of
+  `window_start_at`; `insert_ledger_row` takes `created_at`; and every
+  ledger write must keep the running totals current (`snipz.storage.spend`).
+  On Postgres, writes also take a per-scope advisory lock (shared; exclusive
+  for `set_limit`), and the sweeper now locks the scopes it releases —
+  `snipz-protocol.md` §7.2 documents the contract for other clients.
+- **Cost:** a few more statements per write. On SQLite, multi-scope
+  reservations run at ~400 req/s instead of ~580 in the 10k load test;
+  single-scope throughput is unchanged. `SqliteBackend.close()` now
   closes that connection (it reopens on next use); use one backend per
   event loop.
 

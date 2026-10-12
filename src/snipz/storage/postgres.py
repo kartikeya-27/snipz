@@ -25,8 +25,9 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncIterator, Iterable, Iterator
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import datetime
 from decimal import Decimal
 from importlib.resources import files
@@ -34,12 +35,14 @@ from importlib.resources.abc import Traversable
 from typing import TYPE_CHECKING, Final
 from uuid import UUID
 
+from snipz.ledger import window_start
 from snipz.storage import (
     CommitOutcome,
     LedgerRow,
     LimitRow,
     PricingRow,
     RequestIdConflictError,
+    spend,
 )
 from snipz.storage.sql import postgres as sql
 
@@ -96,18 +99,13 @@ class PostgresLedgerConnection:
 
     # -- cap-check operations -------------------------------------------------
 
-    async def lock_limit(
-        self,
-        *,
-        scope_type: str,
-        scope_id: str,
-        window: str,
-    ) -> None:
-        # Row-level write lock on the limit row. If no limit is
-        # configured for the scope (tracker mode), this returns 0 rows
-        # and locks nothing — fetch_limit will return None and the
-        # caller will skip this scope.
-        await self._conn.execute(sql.LOCK_LIMIT, scope_type, scope_id, window)
+    async def lock_scope(self, *, scope_type: str, scope_id: str) -> None:
+        # Shared advisory lock first (upsert_limit holds it exclusively),
+        # then every limit row of the scope. Tracker-mode scopes have no
+        # limit rows; the advisory lock alone orders them against
+        # upsert_limit.
+        await self._conn.execute(sql.SCOPE_LOCK_SHARED, scope_type, scope_id)
+        await self._conn.execute(sql.LOCK_SCOPE_LIMITS, scope_type, scope_id)
 
     async def fetch_limit(
         self,
@@ -131,15 +129,16 @@ class PostgresLedgerConnection:
         *,
         scope_type: str,
         scope_id: str,
-        window_start_at: datetime,
+        window: str,
+        now: datetime,
     ) -> Decimal:
-        result = await self._conn.fetchval(
-            sql.SPEND_QUERY, scope_type, scope_id, window_start_at
+        total = next(
+            t for t in await self._window_totals(scope_type, scope_id) if t.window == window
         )
-        if result is None:
-            return Decimal("0")
-        # COALESCE may yield int when SUM is NULL; normalize to Decimal.
-        return Decimal(str(result))
+        spent = spend.spent_in_window(total, now)
+        if spent is not None:
+            return spent
+        return await self._rebuild_total(total, now)
 
     # -- ledger writes --------------------------------------------------------
 
@@ -155,7 +154,9 @@ class PostgresLedgerConnection:
         provider: str | None,
         request_id: str | None,
         expires_at: datetime,
+        created_at: datetime,
     ) -> None:
+        estimated = spend.quantize_cents(estimated_cents)
         try:
             await self._conn.execute(
                 sql.INSERT_LEDGER,
@@ -163,11 +164,12 @@ class PostgresLedgerConnection:
                 reservation_id,
                 scope_type,
                 scope_id,
-                estimated_cents,
+                estimated,
                 model,
                 provider,
                 request_id,
                 expires_at,
+                created_at,
             )
         except _asyncpg.exceptions.UniqueViolationError as exc:
             # The only unique index hit by this insert is the partial
@@ -177,15 +179,32 @@ class PostgresLedgerConnection:
             if request_id is None:
                 raise
             raise RequestIdConflictError(request_id) from exc
+        inserted = LedgerRow(
+            id=row_id,
+            reservation_id=reservation_id,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            window="",
+            state="reserved",
+            late=False,
+            estimated_cents=estimated,
+            actual_cents=None,
+            request_id=request_id,
+            expires_at=expires_at,
+            created_at=created_at,
+        )
+        await self._track(before={}, after={row_id: inserted})
 
     async def update_observation(
         self,
         reservation_id: UUID,
         actual_cents: Decimal,
     ) -> int:
+        before = await self._lock_reservation(reservation_id)
         status = await self._conn.execute(
-            sql.OBSERVE_UPDATE, actual_cents, reservation_id
+            sql.OBSERVE_UPDATE, spend.quantize_cents(actual_cents), reservation_id
         )
+        await self._track(before, await self._reservation_rows(reservation_id))
         return _parse_rowcount(status)
 
     async def commit_reservation(
@@ -195,18 +214,19 @@ class PostgresLedgerConnection:
         *,
         now: datetime,
     ) -> CommitOutcome:
-        status = await self._conn.execute(
-            sql.COMMIT_NORMAL, actual_cents, now, reservation_id
-        )
-        normal_count = _parse_rowcount(status)
-        if normal_count > 0:
-            return CommitOutcome(rows_affected=normal_count, was_late=False)
+        actual = spend.quantize_cents(actual_cents)
+        before = await self._lock_reservation(reservation_id)
 
-        status = await self._conn.execute(
-            sql.COMMIT_LATE, actual_cents, now, reservation_id
-        )
-        late_count = _parse_rowcount(status)
-        return CommitOutcome(rows_affected=late_count, was_late=late_count > 0)
+        status = await self._conn.execute(sql.COMMIT_NORMAL, actual, now, reservation_id)
+        count = _parse_rowcount(status)
+        was_late = False
+        if count == 0:
+            status = await self._conn.execute(sql.COMMIT_LATE, actual, now, reservation_id)
+            count = _parse_rowcount(status)
+            was_late = count > 0
+
+        await self._track(before, await self._reservation_rows(reservation_id))
+        return CommitOutcome(rows_affected=count, was_late=was_late)
 
     async def release_reservation(
         self,
@@ -214,13 +234,35 @@ class PostgresLedgerConnection:
         *,
         now: datetime,
     ) -> int:
-        status = await self._conn.execute(
-            sql.RELEASE_BY_CALLER, now, reservation_id
-        )
+        before = await self._lock_reservation(reservation_id)
+        status = await self._conn.execute(sql.RELEASE_BY_CALLER, now, reservation_id)
+        await self._track(before, await self._reservation_rows(reservation_id))
         return _parse_rowcount(status)
 
     async def sweep_expired(self, *, now: datetime) -> int:
-        status = await self._conn.execute(sql.SWEEP_EXPIRED, now, now)
+        scopes = [
+            (r["scope_type"], r["scope_id"])
+            for r in await self._conn.fetch(sql.EXPIRED_SCOPES, now)
+        ]
+        if not scopes:
+            return 0
+        for scope_type, scope_id in scopes:  # already sorted by the query
+            await self.lock_scope(scope_type=scope_type, scope_id=scope_id)
+        expired = _rows_by_id(
+            await self._conn.fetch(
+                sql.EXPIRED_ROWS_FOR_UPDATE,
+                now,
+                [scope_type for scope_type, _ in scopes],
+                [scope_id for _, scope_id in scopes],
+            )
+        )
+        if not expired:
+            return 0
+        status = await self._conn.execute(sql.RELEASE_EXPIRED_ROWS, now, list(expired))
+        released = {
+            row_id: replace(row, state="released", late=True) for row_id, row in expired.items()
+        }
+        await self._track(before=expired, after=released)
         return _parse_rowcount(status)
 
     # -- queries --------------------------------------------------------------
@@ -240,6 +282,9 @@ class PostgresLedgerConnection:
         cap_cents: Decimal,
         grace_pct: int,
     ) -> None:
+        # Exclusive: waits out every in-flight ledger write on the scope,
+        # so the rebuilt total cannot miss one.
+        await self._conn.execute(sql.SCOPE_LOCK_EXCLUSIVE, scope_type, scope_id)
         await self._conn.execute(
             sql.UPSERT_LIMIT,
             scope_type,
@@ -267,6 +312,62 @@ class PostgresLedgerConnection:
             for record in records
         ]
 
+    # -- running totals -------------------------------------------------------
+
+    async def _window_totals(self, scope_type: str, scope_id: str) -> list[spend.WindowTotal]:
+        records = await self._conn.fetch(sql.WINDOW_TOTALS, scope_type, scope_id)
+        return [
+            spend.WindowTotal(
+                scope_type=scope_type,
+                scope_id=scope_id,
+                window=record["window"],
+                window_start_at=record["window_start_at"],
+                spent_micros=record["window_spend_micros"],
+            )
+            for record in records
+        ]
+
+    async def _store_totals(self, totals: Iterable[spend.WindowTotal]) -> None:
+        for total in totals:
+            await self._conn.execute(
+                sql.STORE_WINDOW_TOTAL,
+                total.window_start_at,
+                total.spent_micros,
+                total.scope_type,
+                total.scope_id,
+                total.window,
+            )
+
+    async def _rebuild_total(self, total: spend.WindowTotal, now: datetime) -> Decimal:
+        """Recompute ``total`` for the window containing ``now`` and store it."""
+        start = window_start(total.window, now)
+        micros: int = await self._conn.fetchval(
+            sql.SCOPE_SPEND_MICROS_SINCE, total.scope_type, total.scope_id, start
+        )
+        await self._store_totals([replace(total, window_start_at=start, spent_micros=micros)])
+        return spend.from_micros(micros)
+
+    async def _lock_reservation(self, reservation_id: UUID) -> dict[UUID, LedgerRow]:
+        """Lock a reservation's scopes, then its rows; return the rows."""
+        for record in await self._conn.fetch(sql.RESERVATION_SCOPES, reservation_id):
+            await self.lock_scope(scope_type=record["scope_type"], scope_id=record["scope_id"])
+        return _rows_by_id(
+            await self._conn.fetch(sql.RESERVATION_ROWS_FOR_UPDATE, reservation_id)
+        )
+
+    async def _reservation_rows(self, reservation_id: UUID) -> dict[UUID, LedgerRow]:
+        return _rows_by_id(await self._conn.fetch(sql.RESERVATION_ROWS, reservation_id))
+
+    async def _track(self, before: dict[UUID, LedgerRow], after: dict[UUID, LedgerRow]) -> None:
+        """Fold a write's row changes into the affected scopes' totals.
+
+        The scopes are already locked by the caller (``lock_scope``).
+        """
+        rows = (*before.values(), *after.values())
+        scopes = sorted({(row.scope_type, row.scope_id) for row in rows})
+        totals = [t for scope in scopes for t in await self._window_totals(*scope)]
+        await self._store_totals(spend.apply_row_changes(totals, before, after))
+
 
 def _parse_rowcount(status: str) -> int:
     """Parse asyncpg's command status string for the affected row count.
@@ -280,6 +381,10 @@ def _parse_rowcount(status: str) -> int:
     last = parts[-1]
     return int(last) if last.isdigit() else 0
 
+
+
+def _rows_by_id(records: Iterable[Record]) -> dict[UUID, LedgerRow]:
+    return {row.id: row for row in map(_record_to_ledger, records)}
 
 def _record_to_ledger(record: Record) -> LedgerRow:
     # ``window`` is not stored on ledger rows; the engine fills it in

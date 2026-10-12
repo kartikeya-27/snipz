@@ -226,17 +226,19 @@ Budget ─▶ Backend ─▶ LedgerConnection ─▶ ledger.py (cap-check orches
 
 The wrapper exposes one async API; per-backend implementations dispatch to dialect-specific SQL (`storage/sql/{sqlite,postgres}.py`) and to native type adapters. UUIDs, Decimals, datetimes, and booleans flow as Python-native types through `ledger.py` — string conversion happens inside the backend, not in the engine.
 
-`lock_limit` is the most dialect-divergent operation and lives as a method on `LedgerConnection`:
+`lock_scope` is the most dialect-divergent operation and lives as a method on `LedgerConnection`:
 
-- **SqliteBackend**: no-op. `BEGIN IMMEDIATE` in `transaction()` already holds the DB-wide writer lock.
-- **PostgresBackend**: `SET LOCAL lock_timeout = '5s'; SELECT cap_cents … FOR UPDATE`. A worker waiting >5s on a contended row sees a clear error rather than hanging.
+- **SqliteBackend**: no-op. `BEGIN IMMEDIATE` in `transaction()` already holds the DB-wide writer lock (writers also queue in-process on an `asyncio.Lock` and share one connection).
+- **PostgresBackend**: `SET LOCAL lock_timeout = '5s'`, the scope's shared advisory lock, then every limit row of the scope `FOR UPDATE`. A worker waiting >5s on a contended row sees a clear error rather than hanging.
+
+Every ledger write (reserve, observe, commit, release, sweep) locks its scopes this way, in sorted order, before touching ledger rows, and keeps the running spend totals on the limit rows current in the same transaction (decision 26).
 
 All user-supplied values flow as bound parameters. SQL is never built via string concatenation, regardless of dialect.
 
 ## Extension points
 
 - **`Backend` protocol** — implement to add storage. Methods: `transaction()`, `connect()`, `migrate()`, `close()`. v0 ships SQLite (Phase 1) and Postgres (Phase 2).
-- **`LedgerConnection` protocol** — implement alongside a new backend to expose dialect-specific operations (`lock_limit`, `fetch_limit`, `current_spend`, `insert_ledger_row`, etc.) under one async interface.
+- **`LedgerConnection` protocol** — implement alongside a new backend to expose dialect-specific operations (`lock_scope`, `fetch_limit`, `current_spend`, `insert_ledger_row`, etc.) under one async interface.
 - **`Estimator` protocol** — implement to add a provider. Method: `estimate(prompt, model) → (input_tokens, max_output_tokens)`.
 - **Event hooks** — `on_reserved`, `on_committed`, `on_released`, `on_overrun`. Sync + async variants. Handler errors are logged, not propagated.
 
@@ -336,7 +338,9 @@ SELECT cap_cents, grace_pct FROM snipz_limits
    AND enabled = TRUE
  FOR UPDATE;
 
--- 2. Compute current spend in this window
+-- 2. Current spend in this window: read the limit row's running total
+--    (window_start_at, window_spend_micros — decision 26). When it is
+--    unknown (NULL), rebuild it once with this formula and store it:
 SELECT COALESCE(SUM(
   CASE
     WHEN state = 'committed' THEN actual_cents
@@ -349,9 +353,10 @@ SELECT COALESCE(SUM(
    AND created_at >= $4;   -- window start, computed in app code
 
 -- 3. If spent + new_estimate > cap_cents * (1 + grace_pct/100): raise BudgetExceededError
--- 4. Else INSERT the reservation row(s)
+-- 4. Else INSERT the reservation row(s) and add them to the totals
 
 INSERT INTO snipz_ledger (...) VALUES (...);
+UPDATE snipz_limits SET window_spend_micros = ... WHERE ...;
 
 COMMIT;
 ```
@@ -454,3 +459,4 @@ Locked-in choices, recorded so we don't relitigate them.
 23. **No `check_connectivity()` on the Backend protocol** — asyncpg's defaults (warm pool, idle recycling) handle 99% of real cases. DB health is surfaced via observability (Phase 7 events), not a protocol method. Add only if a real user reports flaky pool behavior.
 24. **Sync wrapper ships experimental in Phase 2** — `sync.py` runs the async core via a dedicated background event loop. Calls from inside an active event loop raise rather than deadlock. Marked `experimental` in the README; promote to stable in Phase 3 once exercised.
 25. **testcontainers for Postgres in CI; SQLite tests stay in-process** — adds a Docker dependency for development and CI, but exercises real Postgres semantics. Conformance suite runs against both backends in a CI matrix.
+26. **Running spend totals on the limit row (schema v3)** — the cap check read `SUM(...)` over the scope's ledger rows on every reservation, so its cost grew with traffic: 492 ms per reserve + commit at 1M rows in a window, ~2/s on that scope. Each limit row now carries `window_start_at` / `window_spend_micros`, kept current in the same transaction as every ledger write (rules in `storage/spend.py`): 2.2 ms at 1M rows, the same as an empty scope. The total lives on the limit row because the cap check already locks it, so no new lock class is introduced; every write locks its scopes' limit rows in sorted order before ledger rows, so writes cannot deadlock. Amounts are stored at 6 decimal places and totals are integer micro-cents, so they never drift. Unknown totals (`NULL`) are rebuilt with one SQL `SUM` under the locks — set by migration, `set_limit`, and unplaceable changes. Postgres adds a per-scope advisory lock (shared for writes, exclusive for `set_limit`) so a new limit cannot miss an in-flight write. Verified by a 3,000-step randomized consistency test and a 1M-row load test on both dialects. Cost: a few extra statements per write (~30% lower SQLite throughput on multi-scope reservations).

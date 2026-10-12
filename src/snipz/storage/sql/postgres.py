@@ -11,9 +11,16 @@ Conventions:
   case because both ignore a NULL second argument when wrapped in
   ``COALESCE``, which is how the formula is written.
 
-The cap-check formula in :data:`SPEND_QUERY` matches the canonical
-formula in ``snipz-protocol.md`` §7. Any change here MUST be mirrored
-in the SQLite dialect and re-verified against the conformance suite.
+Cap checks read running per-window totals from ``snipz_limits``; the
+canonical spend formula (``snipz-protocol.md`` §7) is applied in
+:mod:`snipz.storage.spend`. Any change here MUST be mirrored in the
+SQLite dialect.
+
+Locking: every ledger write takes, per scope in sorted
+``(scope_type, scope_id)`` order, the scope's shared advisory lock and
+then all of the scope's limit rows ``FOR UPDATE`` — before touching
+ledger rows. ``upsert_limit`` takes the advisory lock exclusively. One
+global order means concurrent writers cannot deadlock.
 """
 
 from __future__ import annotations
@@ -33,33 +40,54 @@ LIMIT_LOOKUP: Final = """
 """
 
 
-# Acquire a row-level write lock on the limit row before reading current
-# spend, so concurrent reservers serialize cleanly. Returns 0 rows when
-# no limit is configured for the scope (tracker mode); the caller treats
-# that the same as a NULL fetch.
-LOCK_LIMIT: Final = """
+# Advisory lock keyed by scope. Shared by ledger writes (they do not block
+# each other), exclusive for upsert_limit, so a limit never changes while
+# a write on its scope is in flight. chr(31) separates type from id.
+SCOPE_LOCK_SHARED: Final = (
+    "SELECT pg_advisory_xact_lock_shared(hashtextextended($1 || chr(31) || $2, 0))"
+)
+SCOPE_LOCK_EXCLUSIVE: Final = (
+    "SELECT pg_advisory_xact_lock(hashtextextended($1 || chr(31) || $2, 0))"
+)
+
+
+# Every limit row of a scope, locked in window order. Their running
+# totals all move when a ledger row of the scope changes.
+LOCK_SCOPE_LIMITS: Final = """
     SELECT 1
       FROM snipz_limits
-     WHERE scope_type = $1 AND scope_id = $2 AND "window" = $3 AND enabled = TRUE
-     FOR UPDATE
+     WHERE scope_type = $1 AND scope_id = $2
+     ORDER BY "window"
+       FOR UPDATE
 """
 
 
-# State-aware cap-check sum.
-#
-# Committed rows count at ``actual_cents`` (the truth).
-# Reserved rows count at ``GREATEST(actual, estimated)`` so streaming
-# overruns are visible to the next request.
-#
-# A flat ``GREATEST`` over both states would over-count committed rows
-# that came in under estimate. Documented in decision log entry 11.
-SPEND_QUERY: Final = """
-    SELECT COALESCE(SUM(
+# Running totals for every window of one scope (see snipz.storage.spend).
+WINDOW_TOTALS: Final = """
+    SELECT "window", window_start_at, window_spend_micros
+      FROM snipz_limits
+     WHERE scope_type = $1 AND scope_id = $2
+"""
+
+
+STORE_WINDOW_TOTAL: Final = """
+    UPDATE snipz_limits
+       SET window_start_at = $1, window_spend_micros = $2
+     WHERE scope_type = $3 AND scope_id = $4 AND "window" = $5
+"""
+
+
+# A scope's spend since a window start, in micro-cents — rebuilds a
+# running total. The canonical formula (committed at actual, reserved at
+# GREATEST(actual, estimated)), rounded per row to whole micro-cents
+# exactly as snipz.storage.spend.contribution_micros does; a test pins the
+# two together. Served by idx_ledger_scope_window.
+SCOPE_SPEND_MICROS_SINCE: Final = """
+    SELECT COALESCE(SUM(ROUND(
         CASE
             WHEN state = 'committed' THEN actual_cents
-            WHEN state = 'reserved'  THEN GREATEST(COALESCE(actual_cents, 0), estimated_cents)
-        END
-    ), 0)
+            ELSE GREATEST(COALESCE(actual_cents, 0), estimated_cents)
+        END * 1000000)), 0)::BIGINT
       FROM snipz_ledger
      WHERE scope_type = $1 AND scope_id = $2
        AND state IN ('reserved', 'committed')
@@ -67,21 +95,69 @@ SPEND_QUERY: Final = """
 """
 
 
+_LEDGER_COLUMNS = """
+    id, reservation_id, scope_type, scope_id, state, late,
+    estimated_cents, actual_cents, request_id, expires_at, created_at
+"""
+
+
+RESERVATION_SCOPES: Final = """
+    SELECT DISTINCT scope_type, scope_id
+      FROM snipz_ledger
+     WHERE reservation_id = $1
+     ORDER BY scope_type, scope_id
+"""
+
+
+RESERVATION_ROWS: Final = f"""
+    SELECT {_LEDGER_COLUMNS} FROM snipz_ledger WHERE reservation_id = $1
+"""  # noqa: S608 — constant column list, no user input
+
+
+RESERVATION_ROWS_FOR_UPDATE: Final = f"""
+    SELECT {_LEDGER_COLUMNS} FROM snipz_ledger WHERE reservation_id = $1 FOR UPDATE
+"""  # noqa: S608
+
+
+EXPIRED_SCOPES: Final = """
+    SELECT DISTINCT scope_type, scope_id
+      FROM snipz_ledger
+     WHERE state = 'reserved' AND expires_at < $1
+     ORDER BY scope_type, scope_id
+"""
+
+
+# Expired rows of the scopes the sweep has locked ($2 / $3: parallel
+# arrays of scope_type / scope_id). Rows of other scopes wait for the
+# next sweep rather than being locked out of order.
+EXPIRED_ROWS_FOR_UPDATE: Final = f"""
+    SELECT {_LEDGER_COLUMNS}
+      FROM snipz_ledger
+     WHERE state = 'reserved' AND expires_at < $1
+       AND (scope_type, scope_id) IN (SELECT * FROM unnest($2::text[], $3::text[]))
+       FOR UPDATE
+"""  # noqa: S608
+
+
+RELEASE_EXPIRED_ROWS: Final = """
+    UPDATE snipz_ledger
+       SET state = 'released', late = TRUE, settled_at = $1
+     WHERE id = ANY($2::uuid[]) AND state = 'reserved'
+"""
+
+
 INSERT_LEDGER: Final = """
     INSERT INTO snipz_ledger (
         id, reservation_id, scope_type, scope_id, state, late,
         estimated_cents, actual_cents, model, provider,
-        request_id, expires_at
-    ) VALUES ($1, $2, $3, $4, 'reserved', FALSE, $5, NULL, $6, $7, $8, $9)
+        request_id, expires_at, created_at
+    ) VALUES ($1, $2, $3, $4, 'reserved', FALSE, $5, NULL, $6, $7, $8, $9, $10)
 """
 
 
-FIND_BY_REQUEST_ID: Final = """
-    SELECT id, reservation_id, scope_type, scope_id, state, late,
-           estimated_cents, actual_cents, request_id, expires_at, created_at
-      FROM snipz_ledger
-     WHERE request_id = $1
-"""
+FIND_BY_REQUEST_ID: Final = f"""
+    SELECT {_LEDGER_COLUMNS} FROM snipz_ledger WHERE request_id = $1
+"""  # noqa: S608
 
 
 OBSERVE_UPDATE: Final = """
@@ -112,19 +188,16 @@ RELEASE_BY_CALLER: Final = """
 """
 
 
-SWEEP_EXPIRED: Final = """
-    UPDATE snipz_ledger
-       SET state = 'released', late = TRUE, settled_at = $1
-     WHERE state = 'reserved' AND expires_at < $2
-"""
-
-
+# A new or changed limit starts with an unknown running total
+# (window_start_at NULL), rebuilt from the ledger on first use.
 UPSERT_LIMIT: Final = """
     INSERT INTO snipz_limits (scope_type, scope_id, "window", cap_cents, grace_pct)
     VALUES ($1, $2, $3, $4, $5)
     ON CONFLICT (scope_type, scope_id, "window") DO UPDATE SET
         cap_cents = EXCLUDED.cap_cents,
         grace_pct = EXCLUDED.grace_pct,
+        window_start_at = NULL,
+        window_spend_micros = 0,
         updated_at = NOW()
 """
 

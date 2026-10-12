@@ -7,7 +7,9 @@ name: CI
 #   test      — SQLite suite across every supported Python (3.11+).
 #   postgres  — the opt-in `--postgres` suite. ubuntu-latest ships
 #               Docker, which testcontainers uses to start postgres:16.
-#   load      — tests/test_load.py at 10,000 requests on SQLite and Postgres.
+#   load      — full-size load tests on SQLite and Postgres: 10,000
+#               requests, a 1M-row ledger, and a 3,000-step running-total
+#               consistency run.
 #   lint      — ruff + mypy strict on the floor version, so a 3.12+
 #               construct sneaking into src/ fails here first.
 
@@ -63,7 +65,7 @@ jobs:
         run: uv run --python 3.13 pytest --postgres --tb=short
 
   load:
-    name: Load test (10k requests, SQLite + Postgres)
+    name: Load test (10k requests, 1M-row ledger; SQLite + Postgres)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -77,7 +79,9 @@ jobs:
 
       # -s prints each scenario's throughput and outcome tally.
       - name: Run load tests at full size
-        run: uv run --python 3.13 pytest tests/test_load.py --load --postgres -s --tb=short
+        run: >-
+          uv run --python 3.13 pytest tests/test_load.py tests/test_spend_consistency.py
+          --load --postgres -s --tb=short
 
   lint:
     name: Lint + typecheck
